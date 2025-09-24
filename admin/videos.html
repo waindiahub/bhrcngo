@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Videos - BHRC Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="../assets/css/common.css" rel="stylesheet">
+    <link href="../assets/css/admin.css" rel="stylesheet">
+    <style>
+        .video-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .video-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .video-thumbnail {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background: #f8f9fa;
+            overflow: hidden;
+        }
+        .video-thumbnail img,
+        .video-thumbnail video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .video-card:hover .video-overlay {
+            opacity: 1;
+        }
+        .play-button {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #007bff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .play-button:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+        .video-duration {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+        .video-info {
+            padding: 15px;
+        }
+        .video-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .video-description {
+            color: #6c757d;
+            font-size: 0.875rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .video-meta {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+        .video-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 8px;
+        }
+        .video-tag {
+            background: #e9ecef;
+            color: #495057;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+        }
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .video-list .video-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: all 0.2s ease;
+        }
+        .video-list .video-item:hover {
+            background: #f8f9fa;
+            border-color: #007bff;
+        }
+        .video-list .video-thumbnail {
+            width: 160px;
+            height: 90px;
+            flex-shrink: 0;
+            margin-right: 15px;
+        }
+        .bulk-actions {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .bulk-actions.show {
+            display: block;
+        }
+        .video-player-modal .modal-dialog {
+            max-width: 90vw;
+        }
+        .video-player {
+            width: 100%;
+            height: 60vh;
+            background: #000;
+        }
+        .upload-progress {
+            margin-top: 10px;
+        }
+        .upload-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        .upload-item .progress {
+            flex-grow: 1;
+            margin: 0 15px;
+        }
+        .video-form .form-floating textarea {
+            min-height: 100px;
+        }
+        .tag-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            min-height: 38px;
+        }
+        .tag-item {
+            background: #007bff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .tag-item .remove-tag {
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+        .tag-input input {
+            border: none;
+            outline: none;
+            flex-grow: 1;
+            min-width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="fas fa-shield-alt"></i> BHRC Admin</h4>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-link">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="members.html" class="nav-link">
+                <i class="fas fa-users"></i> Members
+            </a>
+            <a href="associates.html" class="nav-link">
+                <i class="fas fa-handshake"></i> Associates
+            </a>
+            <a href="activities.html" class="nav-link">
+                <i class="fas fa-calendar-alt"></i> Activities
+            </a>
+            <a href="events.html" class="nav-link">
+                <i class="fas fa-calendar-check"></i> Events
+            </a>
+            <a href="gallery.html" class="nav-link">
+                <i class="fas fa-images"></i> Gallery
+            </a>
+            <a href="videos.html" class="nav-link active">
+                <i class="fas fa-video"></i> Videos
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-left">
+                <button class="btn btn-link sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1>Videos</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-success me-2" onclick="addVideo()">
+                    <i class="fas fa-plus"></i> Add Video
+                </button>
+                <button class="btn btn-outline-primary me-2" onclick="uploadVideo()">
+                    <i class="fas fa-upload"></i> Upload
+                </button>
+                <button class="btn btn-outline-info me-2" onclick="manageCategories()">
+                    <i class="fas fa-tags"></i> Categories
+                </button>
+                <div class="dropdown">
+                    <button class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle"></i> Admin
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="content-wrapper">
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Total Videos</h6>
+                                    <h3 id="totalVideos">0</h3>
+                                </div>
+                                <i class="fas fa-video fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Published</h6>
+                                    <h3 id="publishedVideos">0</h3>
+                                </div>
+                                <i class="fas fa-eye fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Total Views</h6>
+                                    <h3 id="totalViews">0</h3>
+                                </div>
+                                <i class="fas fa-play fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Storage Used</h6>
+                                    <h3 id="storageUsed">0 GB</h3>
+                                </div>
+                                <i class="fas fa-hdd fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters and Controls -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" id="videoSearch" placeholder="Search videos...">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="categoryFilter">
+                                <option value="">All Categories</option>
+                                <option value="events">Events</option>
+                                <option value="activities">Activities</option>
+                                <option value="interviews">Interviews</option>
+                                <option value="documentaries">Documentaries</option>
+                                <option value="training">Training</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="published">Published</option>
+                                <option value="draft">Draft</option>
+                                <option value="private">Private</option>
+                                <option value="processing">Processing</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="sortBy">
+                                <option value="date_desc">Newest First</option>
+                                <option value="date_asc">Oldest First</option>
+                                <option value="views_desc">Most Viewed</option>
+                                <option value="title_asc">Title A-Z</option>
+                                <option value="duration_desc">Longest First</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="btn-group w-100">
+                                <button class="btn btn-outline-secondary active" id="gridView" onclick="toggleView('grid')">
+                                    <i class="fas fa-th"></i>
+                                </button>
+                                <button class="btn btn-outline-secondary" id="listView" onclick="toggleView('list')">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <button class="btn btn-outline-primary w-100" onclick="toggleSelectMode()">
+                                <i class="fas fa-check-square"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bulk Actions -->
+            <div class="bulk-actions" id="bulkActions">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span id="selectedCount">0</span> videos selected
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-success" onclick="bulkPublish()">
+                            <i class="fas fa-eye"></i> Publish
+                        </button>
+                        <button class="btn btn-outline-warning" onclick="bulkUnpublish()">
+                            <i class="fas fa-eye-slash"></i> Unpublish
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="bulkMoveToCategory()">
+                            <i class="fas fa-folder"></i> Move to Category
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="bulkDelete()">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Videos Container -->
+            <div id="videosContainer">
+                <!-- Videos will be loaded here -->
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Videos pagination" class="mt-4">
+                <ul class="pagination justify-content-center" id="videosPagination">
+                    <!-- Pagination will be generated here -->
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Add/Edit Video Modal -->
+    <div class="modal fade" id="videoModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="videoModalTitle">Add Video</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="videoForm" class="video-form">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="videoTitle" placeholder="Video Title" required>
+                                    <label for="videoTitle">Video Title *</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" id="videoStatus">
+                                        <option value="draft">Draft</option>
+                                        <option value="published">Published</option>
+                                        <option value="private">Private</option>
+                                    </select>
+                                    <label for="videoStatus">Status</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <textarea class="form-control" id="videoDescription" placeholder="Video description"></textarea>
+                            <label for="videoDescription">Description</label>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" id="videoCategory">
+                                        <option value="">Select Category</option>
+                                        <option value="events">Events</option>
+                                        <option value="activities">Activities</option>
+                                        <option value="interviews">Interviews</option>
+                                        <option value="documentaries">Documentaries</option>
+                                        <option value="training">Training</option>
+                                    </select>
+                                    <label for="videoCategory">Category</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="date" class="form-control" id="videoDate">
+                                    <label for="videoDate">Event Date</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Video Source</label>
+                            <div class="btn-group w-100 mb-3" role="group">
+                                <input type="radio" class="btn-check" name="videoSource" id="sourceFile" value="file" checked>
+                                <label class="btn btn-outline-primary" for="sourceFile">Upload File</label>
+                                
+                                <input type="radio" class="btn-check" name="videoSource" id="sourceUrl" value="url">
+                                <label class="btn btn-outline-primary" for="sourceUrl">YouTube/Vimeo URL</label>
+                            </div>
+
+                            <div id="fileUploadSection">
+                                <input type="file" class="form-control" id="videoFile" accept="video/*">
+                                <div class="form-text">Supported formats: MP4, AVI, MOV, WMV (Max: 500MB)</div>
+                            </div>
+
+                            <div id="urlSection" style="display: none;">
+                                <input type="url" class="form-control" id="videoUrl" placeholder="https://www.youtube.com/watch?v=...">
+                                <div class="form-text">Enter YouTube, Vimeo, or other video platform URL</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Thumbnail</label>
+                                    <input type="file" class="form-control" id="videoThumbnail" accept="image/*">
+                                    <div class="form-text">Upload custom thumbnail (optional)</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="videoDuration" placeholder="00:00">
+                                    <label for="videoDuration">Duration (mm:ss)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Tags</label>
+                            <div class="tag-input" id="tagInput">
+                                <input type="text" placeholder="Add tags..." onkeypress="handleTagInput(event)">
+                            </div>
+                            <div class="form-text">Press Enter to add tags</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="videoFeatured">
+                                    <label class="form-check-label" for="videoFeatured">
+                                        Featured Video
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="videoAllowComments">
+                                    <label class="form-check-label" for="videoAllowComments">
+                                        Allow Comments
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-info" onclick="previewVideo()">
+                        <i class="fas fa-eye"></i> Preview
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="saveVideo()">
+                        <i class="fas fa-save"></i> Save Video
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Player Modal -->
+    <div class="modal fade video-player-modal" id="videoPlayerModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="playerVideoTitle">Video Player</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div id="videoPlayerContainer" class="video-player">
+                        <!-- Video player will be inserted here -->
+                    </div>
+                    <div class="p-3">
+                        <div id="videoPlayerInfo">
+                            <!-- Video info will be shown here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Progress Modal -->
+    <div class="modal fade" id="uploadProgressModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Uploading Videos</h5>
+                </div>
+                <div class="modal-body">
+                    <div id="uploadProgressContainer">
+                        <!-- Upload progress items will be shown here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        class VideosManager {
+            constructor() {
+                this.videos = [];
+                this.selectedVideos = new Set();
+                this.currentView = 'grid';
+                this.selectMode = false;
+                this.currentVideo = null;
+                this.currentPage = 1;
+                this.itemsPerPage = 12;
+                this.tags = [];
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadVideos();
+                this.updateStats();
+            }
+
+            setupEventListeners() {
+                // Search and filters
+                document.getElementById('videoSearch').addEventListener('input', () => this.filterVideos());
+                document.getElementById('categoryFilter').addEventListener('change', () => this.filterVideos());
+                document.getElementById('statusFilter').addEventListener('change', () => this.filterVideos());
+                document.getElementById('sortBy').addEventListener('change', () => this.filterVideos());
+
+                // Video source toggle
+                document.querySelectorAll('input[name="videoSource"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        const fileSection = document.getElementById('fileUploadSection');
+                        const urlSection = document.getElementById('urlSection');
+                        
+                        if (e.target.value === 'file') {
+                            fileSection.style.display = 'block';
+                            urlSection.style.display = 'none';
+                        } else {
+                            fileSection.style.display = 'none';
+                            urlSection.style.display = 'block';
+                        }
+                    });
+                });
+
+                // File upload progress
+                document.getElementById('videoFile').addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        this.handleFileUpload(e.target.files[0]);
+                    }
+                });
+            }
+
+            async loadVideos() {
+                try {
+                    // Simulate API call
+                    this.videos = this.getMockVideos();
+                    this.renderVideos();
+                    this.updateStats();
+                } catch (error) {
+                    console.error('Error loading videos:', error);
+                    this.showToast('Error loading videos: ' + error.message, 'error');
+                }
+            }
+
+            getMockVideos() {
+                return [
+                    {
+                        id: 1,
+                        title: 'Human Rights Awareness Workshop 2024',
+                        description: 'A comprehensive workshop on human rights awareness conducted by BHRC experts.',
+                        category: 'training',
+                        status: 'published',
+                        thumbnail: 'https://via.placeholder.com/300x200/007bff/ffffff?text=Workshop',
+                        videoUrl: 'https://example.com/video1.mp4',
+                        duration: '45:30',
+                        views: 1250,
+                        uploadDate: '2024-01-15T10:30:00Z',
+                        publishDate: '2024-01-16T09:00:00Z',
+                        tags: ['workshop', 'training', 'awareness'],
+                        featured: true,
+                        allowComments: true,
+                        fileSize: '125 MB'
+                    },
+                    {
+                        id: 2,
+                        title: 'Community Outreach Program',
+                        description: 'Documentation of our community outreach program in rural areas.',
+                        category: 'activities',
+                        status: 'published',
+                        thumbnail: 'https://via.placeholder.com/300x200/28a745/ffffff?text=Outreach',
+                        videoUrl: 'https://example.com/video2.mp4',
+                        duration: '32:15',
+                        views: 890,
+                        uploadDate: '2024-01-18T14:20:00Z',
+                        publishDate: '2024-01-19T10:15:00Z',
+                        tags: ['community', 'outreach', 'rural'],
+                        featured: false,
+                        allowComments: true,
+                        fileSize: '98 MB'
+                    },
+                    {
+                        id: 3,
+                        title: 'Interview with Human Rights Activist',
+                        description: 'Exclusive interview with renowned human rights activist discussing current challenges.',
+                        category: 'interviews',
+                        status: 'published',
+                        thumbnail: 'https://via.placeholder.com/300x200/ffc107/000000?text=Interview',
+                        videoUrl: 'https://www.youtube.com/watch?v=example',
+                        duration: '28:45',
+                        views: 2100,
+                        uploadDate: '2024-01-20T16:45:00Z',
+                        publishDate: '2024-01-21T11:30:00Z',
+                        tags: ['interview', 'activist', 'discussion'],
+                        featured: true,
+                        allowComments: true,
+                        fileSize: 'External'
+                    },
+                    {
+                        id: 4,
+                        title: 'Annual Conference Highlights',
+                        description: 'Key moments and speeches from our annual human rights conference.',
+                        category: 'events',
+                        status: 'draft',
+                        thumbnail: 'https://via.placeholder.com/300x200/dc3545/ffffff?text=Conference',
+                        videoUrl: 'https://example.com/video4.mp4',
+                        duration: '1:15:20',
+                        views: 0,
+                        uploadDate: '2024-01-22T12:15:00Z',
+                        publishDate: null,
+                        tags: ['conference', 'annual', 'speeches'],
+                        featured: false,
+                        allowComments: true,
+                        fileSize: '245 MB'
+                    },
+                    {
+                        id: 5,
+                        title: 'Legal Aid Documentary',
+                        description: 'Documentary showcasing the impact of our legal aid services.',
+                        category: 'documentaries',
+                        status: 'processing',
+                        thumbnail: 'https://via.placeholder.com/300x200/6f42c1/ffffff?text=Documentary',
+                        videoUrl: 'https://example.com/video5.mp4',
+                        duration: '52:30',
+                        views: 0,
+                        uploadDate: '2024-01-23T09:30:00Z',
+                        publishDate: null,
+                        tags: ['documentary', 'legal-aid', 'impact'],
+                        featured: false,
+                        allowComments: true,
+                        fileSize: '180 MB'
+                    },
+                    {
+                        id: 6,
+                        title: 'Youth Engagement Program',
+                        description: 'Highlights from our youth engagement and education program.',
+                        category: 'activities',
+                        status: 'published',
+                        thumbnail: 'https://via.placeholder.com/300x200/20c997/ffffff?text=Youth',
+                        videoUrl: 'https://example.com/video6.mp4',
+                        duration: '38:12',
+                        views: 756,
+                        uploadDate: '2024-01-25T15:20:00Z',
+                        publishDate: '2024-01-26T08:45:00Z',
+                        tags: ['youth', 'education', 'engagement'],
+                        featured: false,
+                        allowComments: true,
+                        fileSize: '112 MB'
+                    }
+                ];
+            }
+
+            renderVideos() {
+                const container = document.getElementById('videosContainer');
+                
+                if (this.videos.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="fas fa-video fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No videos found</h5>
+                            <p class="text-muted">Upload your first video</p>
+                            <button class="btn btn-primary" onclick="addVideo()">
+                                <i class="fas fa-plus"></i> Add Video
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                if (this.currentView === 'grid') {
+                    this.renderVideosGrid();
+                } else {
+                    this.renderVideosList();
+                }
+            }
+
+            renderVideosGrid() {
+                const container = document.getElementById('videosContainer');
+                
+                const html = `
+                    <div class="video-grid">
+                        ${this.videos.map(video => `
+                            <div class="video-card" data-video-id="${video.id}">
+                                ${this.selectMode ? `
+                                    <div class="position-absolute top-0 start-0 p-2" style="z-index: 10;">
+                                        <input type="checkbox" class="form-check-input video-select" 
+                                               value="${video.id}" onchange="toggleVideoSelection(${video.id})">
+                                    </div>
+                                ` : ''}
+                                <div class="video-thumbnail" onclick="playVideo(${video.id})">
+                                    <img src="${video.thumbnail}" alt="${video.title}">
+                                    <div class="video-overlay">
+                                        <div class="play-button">
+                                            <i class="fas fa-play"></i>
+                                        </div>
+                                    </div>
+                                    <div class="video-duration">${video.duration}</div>
+                                </div>
+                                <div class="video-info">
+                                    <h6 class="video-title">${video.title}</h6>
+                                    <p class="video-description">${video.description}</p>
+                                    <div class="video-meta">
+                                        <div>
+                                            <span class="badge bg-${this.getStatusColor(video.status)}">${video.status}</span>
+                                            ${video.featured ? '<span class="badge bg-warning ms-1">Featured</span>' : ''}
+                                        </div>
+                                        <div class="text-end">
+                                            <small><i class="fas fa-eye"></i> ${video.views}</small>
+                                        </div>
+                                    </div>
+                                    <div class="video-tags">
+                                        ${video.tags.map(tag => `<span class="video-tag">${tag}</span>`).join('')}
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar"></i> ${new Date(video.uploadDate).toLocaleDateString()}
+                                        </small>
+                                        <div class="btn-group">
+                                            <button class="btn btn-outline-primary btn-sm" onclick="editVideo(${video.id})" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-outline-info btn-sm" onclick="viewVideoStats(${video.id})" title="Stats">
+                                                <i class="fas fa-chart-bar"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm" onclick="deleteVideo(${video.id})" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                container.innerHTML = html;
+            }
+
+            renderVideosList() {
+                const container = document.getElementById('videosContainer');
+                
+                const html = `
+                    <div class="video-list">
+                        ${this.videos.map(video => `
+                            <div class="video-item" data-video-id="${video.id}">
+                                ${this.selectMode ? `
+                                    <input type="checkbox" class="form-check-input me-3 video-select" 
+                                           value="${video.id}" onchange="toggleVideoSelection(${video.id})">
+                                ` : ''}
+                                <div class="video-thumbnail" onclick="playVideo(${video.id})">
+                                    <img src="${video.thumbnail}" alt="${video.title}">
+                                    <div class="video-overlay">
+                                        <div class="play-button">
+                                            <i class="fas fa-play"></i>
+                                        </div>
+                                    </div>
+                                    <div class="video-duration">${video.duration}</div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="video-title">${video.title}</h6>
+                                            <p class="video-description">${video.description}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-${this.getStatusColor(video.status)}">${video.status}</span>
+                                            ${video.featured ? '<br><span class="badge bg-warning mt-1">Featured</span>' : ''}
+                                        </div>
+                                    </div>
+                                    <div class="video-tags mb-2">
+                                        ${video.tags.map(tag => `<span class="video-tag">${tag}</span>`).join('')}
+                                    </div>
+                                    <div class="d-flex gap-3 text-muted small">
+                                        <span><i class="fas fa-calendar"></i> ${new Date(video.uploadDate).toLocaleDateString()}</span>
+                                        <span><i class="fas fa-eye"></i> ${video.views} views</span>
+                                        <span><i class="fas fa-clock"></i> ${video.duration}</span>
+                                        <span><i class="fas fa-hdd"></i> ${video.fileSize}</span>
+                                    </div>
+                                </div>
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="playVideo(${video.id})">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                    <button class="btn btn-outline-success btn-sm" onclick="editVideo(${video.id})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-info btn-sm" onclick="viewVideoStats(${video.id})">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm" onclick="deleteVideo(${video.id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                container.innerHTML = html;
+            }
+
+            getStatusColor(status) {
+                const colors = {
+                    'published': 'success',
+                    'draft': 'secondary',
+                    'private': 'warning',
+                    'processing': 'info'
+                };
+                return colors[status] || 'secondary';
+            }
+
+            updateStats() {
+                const total = this.videos.length;
+                const published = this.videos.filter(v => v.status === 'published').length;
+                const totalViews = this.videos.reduce((sum, v) => sum + v.views, 0);
+                const storageUsed = '2.5'; // Mock data
+
+                document.getElementById('totalVideos').textContent = total;
+                document.getElementById('publishedVideos').textContent = published;
+                document.getElementById('totalViews').textContent = totalViews.toLocaleString();
+                document.getElementById('storageUsed').textContent = storageUsed + ' GB';
+            }
+
+            toggleView(view) {
+                this.currentView = view;
+                document.getElementById('gridView').classList.toggle('active', view === 'grid');
+                document.getElementById('listView').classList.toggle('active', view === 'list');
+                this.renderVideos();
+            }
+
+            toggleSelectMode() {
+                this.selectMode = !this.selectMode;
+                this.selectedVideos.clear();
+                this.updateBulkActions();
+                this.renderVideos();
+            }
+
+            toggleVideoSelection(id) {
+                if (this.selectedVideos.has(id)) {
+                    this.selectedVideos.delete(id);
+                } else {
+                    this.selectedVideos.add(id);
+                }
+                this.updateBulkActions();
+            }
+
+            updateBulkActions() {
+                const bulkActions = document.getElementById('bulkActions');
+                const selectedCount = document.getElementById('selectedCount');
+                
+                selectedCount.textContent = this.selectedVideos.size;
+                
+                if (this.selectedVideos.size > 0) {
+                    bulkActions.classList.add('show');
+                } else {
+                    bulkActions.classList.remove('show');
+                }
+            }
+
+            filterVideos() {
+                // Implementation for filtering videos
+                this.renderVideos();
+            }
+
+            handleFileUpload(file) {
+                // Show upload progress modal
+                const modal = new bootstrap.Modal(document.getElementById('uploadProgressModal'));
+                modal.show();
+
+                // Simulate upload progress
+                this.simulateUploadProgress(file);
+            }
+
+            simulateUploadProgress(file) {
+                const container = document.getElementById('uploadProgressContainer');
+                const uploadId = 'upload-' + Date.now();
+                
+                const uploadHtml = `
+                    <div class="upload-item" id="${uploadId}">
+                        <i class="fas fa-video text-primary me-2"></i>
+                        <div>
+                            <div class="fw-bold">${file.name}</div>
+                            <small class="text-muted">${this.formatFileSize(file.size)}</small>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <span class="upload-status">0%</span>
+                    </div>
+                `;
+                
+                container.innerHTML = uploadHtml;
+                
+                // Simulate progress
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += Math.random() * 15;
+                    if (progress > 100) progress = 100;
+                    
+                    const progressBar = document.querySelector(`#${uploadId} .progress-bar`);
+                    const statusText = document.querySelector(`#${uploadId} .upload-status`);
+                    
+                    progressBar.style.width = progress + '%';
+                    statusText.textContent = Math.round(progress) + '%';
+                    
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        statusText.innerHTML = '<i class="fas fa-check text-success"></i>';
+                        this.showToast('Video uploaded successfully!', 'success');
+                        setTimeout(() => {
+                            bootstrap.Modal.getInstance(document.getElementById('uploadProgressModal')).hide();
+                        }, 1000);
+                    }
+                }, 200);
+            }
+
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            showToast(message, type = 'info') {
+                const toastContainer = document.getElementById('toastContainer');
+                const toastId = 'toast-' + Date.now();
+                
+                const toastHtml = `
+                    <div class="toast" id="${toastId}" role="alert">
+                        <div class="toast-header">
+                            <i class="fas fa-${type === 'success' ? 'check-circle text-success' : 
+                                type === 'error' ? 'exclamation-circle text-danger' : 
+                                'info-circle text-info'}"></i>
+                            <strong class="me-auto ms-2">Videos</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                        </div>
+                        <div class="toast-body">${message}</div>
+                    </div>
+                `;
+                
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                const toast = new bootstrap.Toast(document.getElementById(toastId));
+                toast.show();
+            }
+        }
+
+        // Global functions
+        function addVideo() {
+            videosManager.currentVideo = null;
+            document.getElementById('videoModalTitle').textContent = 'Add Video';
+            document.getElementById('videoForm').reset();
+            videosManager.tags = [];
+            document.getElementById('tagInput').innerHTML = '<input type="text" placeholder="Add tags..." onkeypress="handleTagInput(event)">';
+            
+            const modal = new bootstrap.Modal(document.getElementById('videoModal'));
+            modal.show();
+        }
+
+        function editVideo(id) {
+            const video = videosManager.videos.find(v => v.id === id);
+            if (!video) return;
+
+            videosManager.currentVideo = video;
+            document.getElementById('videoModalTitle').textContent = 'Edit Video';
+            
+            // Populate form
+            document.getElementById('videoTitle').value = video.title;
+            document.getElementById('videoDescription').value = video.description;
+            document.getElementById('videoCategory').value = video.category;
+            document.getElementById('videoStatus').value = video.status;
+            document.getElementById('videoDuration').value = video.duration;
+            document.getElementById('videoFeatured').checked = video.featured;
+            document.getElementById('videoAllowComments').checked = video.allowComments;
+            
+            // Set tags
+            videosManager.tags = [...video.tags];
+            updateTagDisplay();
+            
+            const modal = new bootstrap.Modal(document.getElementById('videoModal'));
+            modal.show();
+        }
+
+        function playVideo(id) {
+            const video = videosManager.videos.find(v => v.id === id);
+            if (!video) return;
+
+            document.getElementById('playerVideoTitle').textContent = video.title;
+            
+            // Create video player
+            const playerContainer = document.getElementById('videoPlayerContainer');
+            if (video.videoUrl.includes('youtube.com') || video.videoUrl.includes('youtu.be')) {
+                // YouTube embed
+                const videoId = video.videoUrl.split('v=')[1] || video.videoUrl.split('/').pop();
+                playerContainer.innerHTML = `
+                    <iframe width="100%" height="100%" 
+                            src="https://www.youtube.com/embed/${videoId}" 
+                            frameborder="0" allowfullscreen></iframe>
+                `;
+            } else {
+                // Regular video
+                playerContainer.innerHTML = `
+                    <video width="100%" height="100%" controls>
+                        <source src="${video.videoUrl}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                `;
+            }
+            
+            // Show video info
+            document.getElementById('videoPlayerInfo').innerHTML = `
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5>${video.title}</h5>
+                        <p class="text-muted">${video.description}</p>
+                        <div class="video-tags">
+                            ${video.tags.map(tag => `<span class="video-tag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex gap-3 text-muted small">
+                            <span><i class="fas fa-eye"></i> ${video.views} views</span>
+                            <span><i class="fas fa-clock"></i> ${video.duration}</span>
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge bg-${videosManager.getStatusColor(video.status)}">${video.status}</span>
+                            ${video.featured ? '<span class="badge bg-warning ms-1">Featured</span>' : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const modal = new bootstrap.Modal(document.getElementById('videoPlayerModal'));
+            modal.show();
+        }
+
+        function viewVideoStats(id) {
+            videosManager.showToast('Video statistics feature coming soon!', 'info');
+        }
+
+        function deleteVideo(id) {
+            const video = videosManager.videos.find(v => v.id === id);
+            if (!video) return;
+
+            if (confirm(`Are you sure you want to delete "${video.title}"? This action cannot be undone.`)) {
+                videosManager.showToast('Video deleted successfully!', 'success');
+                videosManager.loadVideos();
+            }
+        }
+
+        function uploadVideo() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'video/*';
+            input.multiple = true;
+            input.onchange = (e) => {
+                Array.from(e.target.files).forEach(file => {
+                    videosManager.handleFileUpload(file);
+                });
+            };
+            input.click();
+        }
+
+        function previewVideo() {
+            videosManager.showToast('Video preview feature coming soon!', 'info');
+        }
+
+        function saveVideo() {
+            const form = document.getElementById('videoForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const isEdit = videosManager.currentVideo !== null;
+            const message = isEdit ? 'Video updated successfully!' : 'Video added successfully!';
+            
+            videosManager.showToast(message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('videoModal')).hide();
+            videosManager.loadVideos();
+        }
+
+        function handleTagInput(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const input = event.target;
+                const tag = input.value.trim();
+                
+                if (tag && !videosManager.tags.includes(tag)) {
+                    videosManager.tags.push(tag);
+                    input.value = '';
+                    updateTagDisplay();
+                }
+            }
+        }
+
+        function updateTagDisplay() {
+            const tagInput = document.getElementById('tagInput');
+            tagInput.innerHTML = `
+                ${videosManager.tags.map(tag => `
+                    <span class="tag-item">
+                        ${tag}
+                        <span class="remove-tag" onclick="removeTag('${tag}')">&times;</span>
+                    </span>
+                `).join('')}
+                <input type="text" placeholder="Add tags..." onkeypress="handleTagInput(event)">
+            `;
+        }
+
+        function removeTag(tag) {
+            videosManager.tags = videosManager.tags.filter(t => t !== tag);
+            updateTagDisplay();
+        }
+
+        function toggleVideoSelection(id) {
+            videosManager.toggleVideoSelection(id);
+        }
+
+        function bulkPublish() {
+            if (videosManager.selectedVideos.size === 0) return;
+            
+            if (confirm(`Publish ${videosManager.selectedVideos.size} selected videos?`)) {
+                videosManager.showToast(`${videosManager.selectedVideos.size} videos published!`, 'success');
+                videosManager.selectedVideos.clear();
+                videosManager.updateBulkActions();
+                videosManager.loadVideos();
+            }
+        }
+
+        function bulkUnpublish() {
+            if (videosManager.selectedVideos.size === 0) return;
+            
+            if (confirm(`Unpublish ${videosManager.selectedVideos.size} selected videos?`)) {
+                videosManager.showToast(`${videosManager.selectedVideos.size} videos unpublished!`, 'success');
+                videosManager.selectedVideos.clear();
+                videosManager.updateBulkActions();
+                videosManager.loadVideos();
+            }
+        }
+
+        function bulkMoveToCategory() {
+            if (videosManager.selectedVideos.size === 0) return;
+            
+            const category = prompt('Enter category name:');
+            if (category) {
+                videosManager.showToast(`${videosManager.selectedVideos.size} videos moved to ${category}!`, 'success');
+                videosManager.selectedVideos.clear();
+                videosManager.updateBulkActions();
+                videosManager.loadVideos();
+            }
+        }
+
+        function bulkDelete() {
+            if (videosManager.selectedVideos.size === 0) return;
+            
+            if (confirm(`Are you sure you want to delete ${videosManager.selectedVideos.size} selected videos? This action cannot be undone.`)) {
+                videosManager.showToast(`${videosManager.selectedVideos.size} videos deleted!`, 'success');
+                videosManager.selectedVideos.clear();
+                videosManager.updateBulkActions();
+                videosManager.loadVideos();
+            }
+        }
+
+        function manageCategories() {
+            videosManager.showToast('Category management feature coming soon!', 'info');
+        }
+
+        function toggleView(view) {
+            videosManager.toggleView(view);
+        }
+
+        function toggleSelectMode() {
+            videosManager.toggleSelectMode();
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '../auth/login.html';
+            }
+        }
+
+        // Initialize the videos manager
+        let videosManager;
+        document.addEventListener('DOMContentLoaded', function() {
+            videosManager = new VideosManager();
+        });
+    </script>
+</body>
+</html>
+

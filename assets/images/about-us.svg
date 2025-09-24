@@ -1,0 +1,155 @@
+<svg width="500" height="400" viewBox="0 0 500 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="500" height="400" fill="url(#about-gradient)"/>
+  
+  <!-- Building/Institution representing BHRC -->
+  <g transform="translate(250, 100)">
+    <!-- Main Building -->
+    <rect x="-80" y="50" width="160" height="120" fill="#E5E7EB" stroke="#D1D5DB" stroke-width="2"/>
+    
+    <!-- Roof -->
+    <polygon points="-90,50 0,20 90,50" fill="#2563EB" stroke="#1D4ED8" stroke-width="2"/>
+    
+    <!-- Pillars -->
+    <rect x="-60" y="50" width="8" height="120" fill="white"/>
+    <rect x="-20" y="50" width="8" height="120" fill="white"/>
+    <rect x="20" y="50" width="8" height="120" fill="white"/>
+    <rect x="60" y="50" width="8" height="120" fill="white"/>
+    
+    <!-- Entrance -->
+    <rect x="-25" y="120" width="50" height="50" fill="#1F2937"/>
+    <rect x="-20" y="125" width="40" height="40" fill="#374151"/>
+    
+    <!-- Windows -->
+    <rect x="-70" y="70" width="15" height="15" fill="#3B82F6"/>
+    <rect x="-45" y="70" width="15" height="15" fill="#3B82F6"/>
+    <rect x="35" y="70" width="15" height="15" fill="#3B82F6"/>
+    <rect x="60" y="70" width="15" height="15" fill="#3B82F6"/>
+    
+    <!-- Flag -->
+    <line x1="0" y1="20" x2="0" y2="0" stroke="#8B5A2B" stroke-width="3"/>
+    <rect x="0" y="0" width="30" height="20" fill="#FF6B35"/>
+    <rect x="0" y="7" width="30" height="6" fill="white"/>
+    <rect x="0" y="14" width="30" height="6" fill="#10B981"/>
+    
+    <!-- BHRC Text on Building -->
+    <text x="0" y="45" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" fill="#2563EB" font-weight="bold">BHRC</text>
+  </g>
+  
+  <!-- People representing community -->
+  <!-- Person 1 -->
+  <g transform="translate(100, 250)">
+    <circle cx="0" cy="0" r="15" fill="#E8D5B7"/>
+    <rect x="-10" y="15" width="20" height="30" fill="#2563EB" rx="10"/>
+    <circle cx="-5" cy="-5" r="2" fill="#333"/>
+    <circle cx="5" cy="-5" r="2" fill="#333"/>
+    <path d="M-3 5 Q0 8 3 5" stroke="#333" stroke-width="1" fill="none"/>
+    <!-- Hair -->
+    <path d="M-15 -5 Q-18 -15 -10 -18 Q0 -20 10 -18 Q18 -15 15 -5" fill="#8B4513"/>
+    <!-- Arms raised in celebration -->
+    <ellipse cx="-15" cy="25" rx="4" ry="12" fill="#E8D5B7" transform="rotate(-45)"/>
+    <ellipse cx="15" cy="25" rx="4" ry="12" fill="#E8D5B7" transform="rotate(45)"/>
+  </g>
+  
+  <!-- Person 2 -->
+  <g transform="translate(180, 260)">
+    <circle cx="0" cy="0" r="15" fill="#D4A574"/>
+    <rect x="-10" y="15" width="20" height="30" fill="#10B981" rx="10"/>
+    <circle cx="-5" cy="-5" r="2" fill="#333"/>
+    <circle cx="5" cy="-5" r="2" fill="#333"/>
+    <path d="M-3 5 Q0 8 3 5" stroke="#333" stroke-width="1" fill="none"/>
+    <!-- Hair -->
+    <path d="M-15 -5 Q-18 -15 -10 -18 Q0 -20 10 -18 Q18 -15 15 -5" fill="#2C1810"/>
+    <!-- Arms -->
+    <ellipse cx="-12" cy="25" rx="4" ry="12" fill="#D4A574"/>
+    <ellipse cx="12" cy="25" rx="4" ry="12" fill="#D4A574"/>
+  </g>
+  
+  <!-- Person 3 -->
+  <g transform="translate(320, 260)">
+    <circle cx="0" cy="0" r="15" fill="#F4C2A1"/>
+    <rect x="-10" y="15" width="20" height="30" fill="#F59E0B" rx="10"/>
+    <circle cx="-5" cy="-5" r="2" fill="#333"/>
+    <circle cx="5" cy="-5" r="2" fill="#333"/>
+    <path d="M-3 5 Q0 8 3 5" stroke="#333" stroke-width="1" fill="none"/>
+    <!-- Hair -->
+    <path d="M-15 -5 Q-18 -15 -10 -18 Q0 -20 10 -18 Q18 -15 15 -5" fill="#654321"/>
+    <!-- Arms -->
+    <ellipse cx="-12" cy="25" rx="4" ry="12" fill="#F4C2A1"/>
+    <ellipse cx="12" cy="25" rx="4" ry="12" fill="#F4C2A1"/>
+  </g>
+  
+  <!-- Person 4 -->
+  <g transform="translate(400, 250)">
+    <circle cx="0" cy="0" r="15" fill="#E8D5B7"/>
+    <rect x="-10" y="15" width="20" height="30" fill="#EF4444" rx="10"/>
+    <circle cx="-5" cy="-5" r="2" fill="#333"/>
+    <circle cx="5" cy="-5" r="2" fill="#333"/>
+    <path d="M-3 5 Q0 8 3 5" stroke="#333" stroke-width="1" fill="none"/>
+    <!-- Hair -->
+    <path d="M-15 -5 Q-18 -15 -10 -18 Q0 -20 10 -18 Q18 -15 15 -5" fill="#4A5568"/>
+    <!-- Arms raised -->
+    <ellipse cx="-15" cy="25" rx="4" ry="12" fill="#E8D5B7" transform="rotate(-30)"/>
+    <ellipse cx="15" cy="25" rx="4" ry="12" fill="#E8D5B7" transform="rotate(30)"/>
+  </g>
+  
+  <!-- Connecting hands/unity circle -->
+  <g transform="translate(250, 300)">
+    <circle cx="0" cy="0" r="80" stroke="#2563EB" stroke-width="3" fill="none" stroke-dasharray="10,5" opacity="0.6"/>
+    <!-- Unity symbol in center -->
+    <circle cx="0" cy="0" r="20" fill="#2563EB" opacity="0.1"/>
+    <path d="M-10 -5 Q0 -15 10 -5 Q15 0 10 5 Q0 15 -10 5 Q-15 0 -10 -5" fill="#2563EB" opacity="0.7"/>
+  </g>
+  
+  <!-- Support symbols -->
+  <!-- Heart representing care -->
+  <g transform="translate(80, 150)">
+    <path d="M0 8 Q-8 0 -12 -4 Q-16 -8 -12 -12 Q-8 -16 -4 -12 Q0 -8 0 -8 Q0 -8 4 -12 Q8 -16 12 -12 Q16 -8 12 -4 Q8 0 0 8" fill="#EF4444"/>
+  </g>
+  
+  <!-- Shield representing protection -->
+  <g transform="translate(420, 150)">
+    <path d="M0 -15 Q-10 -15 -15 -10 Q-15 0 -15 10 Q-10 20 0 25 Q10 20 15 10 Q15 0 15 -10 Q10 -15 0 -15" fill="#10B981"/>
+    <path d="M0 -10 Q-6 -10 -10 -6 Q-10 2 -10 8 Q-6 15 0 18 Q6 15 10 8 Q10 2 10 -6 Q6 -10 0 -10" fill="#059669"/>
+    <!-- Check mark -->
+    <path d="M-5 2 L-2 5 L5 -3" stroke="white" stroke-width="2" fill="none"/>
+  </g>
+  
+  <!-- Books representing education -->
+  <g transform="translate(50, 320)">
+    <rect x="0" y="0" width="30" height="20" fill="#2563EB" rx="2"/>
+    <rect x="5" y="5" width="20" height="15" fill="#3B82F6" rx="1"/>
+    <rect x="25" y="-5" width="30" height="20" fill="#10B981" rx="2"/>
+    <rect x="30" y="0" width="20" height="15" fill="#059669" rx="1"/>
+  </g>
+  
+  <!-- Scales representing justice -->
+  <g transform="translate(450, 320)">
+    <rect x="-1" y="0" width="2" height="25" fill="#8B5A2B"/>
+    <rect x="-20" y="-2" width="40" height="2" fill="#C0C0C0"/>
+    <rect x="-25" y="0" width="10" height="8" fill="#FFD700" rx="1"/>
+    <rect x="15" y="0" width="10" height="8" fill="#FFD700" rx="1"/>
+    <polygon points="0,0 -3,5 3,5" fill="#C0C0C0"/>
+  </g>
+  
+  <!-- Decorative elements -->
+  <!-- Stars -->
+  <g fill="#F59E0B" opacity="0.6">
+    <polygon points="30,50 32,56 38,56 33,60 35,66 30,62 25,66 27,60 22,56 28,56" />
+    <polygon points="470,50 472,56 478,56 473,60 475,66 470,62 465,66 467,60 462,56 468,56" />
+    <polygon points="60,380 62,386 68,386 63,390 65,396 60,392 55,396 57,390 52,386 58,386" />
+    <polygon points="440,380 442,386 448,386 443,390 445,396 440,392 435,396 437,390 432,386 438,386" />
+  </g>
+  
+  <!-- Gradient Definitions -->
+  <defs>
+    <linearGradient id="about-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F0F9FF;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#E0F2FE;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F8FAFC;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Text -->
+  <text x="250" y="380" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" fill="#2563EB" font-weight="600">Together for Human Rights</text>
+</svg>

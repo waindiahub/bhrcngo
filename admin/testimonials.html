@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testimonials - BHRC Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="../assets/css/common.css" rel="stylesheet">
+    <link href="../assets/css/admin.css" rel="stylesheet">
+    <style>
+        .testimonial-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-left: 4px solid #007bff;
+        }
+        .testimonial-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .testimonial-card.featured {
+            border-left-color: #ffc107;
+            background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%);
+        }
+        .testimonial-card.pending {
+            border-left-color: #dc3545;
+            background: linear-gradient(135deg, #ffe6e6 0%, #ffffff 100%);
+        }
+        .testimonial-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .rating-stars {
+            color: #ffc107;
+            font-size: 1.1rem;
+        }
+        .testimonial-text {
+            font-style: italic;
+            line-height: 1.6;
+            position: relative;
+        }
+        .testimonial-text::before {
+            content: '"';
+            font-size: 3rem;
+            color: #007bff;
+            position: absolute;
+            top: -10px;
+            left: -20px;
+            opacity: 0.3;
+        }
+        .testimonial-text::after {
+            content: '"';
+            font-size: 3rem;
+            color: #007bff;
+            position: absolute;
+            bottom: -30px;
+            right: -10px;
+            opacity: 0.3;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+        }
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        .testimonial-list .testimonial-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: all 0.2s ease;
+        }
+        .testimonial-list .testimonial-item:hover {
+            background: #f8f9fa;
+            border-color: #007bff;
+        }
+        .testimonial-stats {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        .bulk-actions {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .bulk-actions.show {
+            display: block;
+        }
+        .testimonial-form .form-floating textarea {
+            min-height: 120px;
+        }
+        .star-rating {
+            display: flex;
+            gap: 5px;
+            font-size: 1.5rem;
+        }
+        .star-rating .star {
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        .star-rating .star:hover,
+        .star-rating .star.active {
+            color: #ffc107;
+        }
+        .testimonial-preview {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="fas fa-shield-alt"></i> BHRC Admin</h4>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-link">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="members.html" class="nav-link">
+                <i class="fas fa-users"></i> Members
+            </a>
+            <a href="associates.html" class="nav-link">
+                <i class="fas fa-handshake"></i> Associates
+            </a>
+            <a href="activities.html" class="nav-link">
+                <i class="fas fa-calendar-alt"></i> Activities
+            </a>
+            <a href="events.html" class="nav-link">
+                <i class="fas fa-calendar-check"></i> Events
+            </a>
+            <a href="gallery.html" class="nav-link">
+                <i class="fas fa-images"></i> Gallery
+            </a>
+            <a href="testimonials.html" class="nav-link active">
+                <i class="fas fa-quote-right"></i> Testimonials
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-left">
+                <button class="btn btn-link sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1>Testimonials</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-success me-2" onclick="addTestimonial()">
+                    <i class="fas fa-plus"></i> Add Testimonial
+                </button>
+                <button class="btn btn-outline-primary me-2" onclick="exportTestimonials()">
+                    <i class="fas fa-download"></i> Export
+                </button>
+                <button class="btn btn-outline-info me-2" onclick="testimonialSettings()">
+                    <i class="fas fa-cog"></i> Settings
+                </button>
+                <div class="dropdown">
+                    <button class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle"></i> Admin
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="content-wrapper">
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Total Testimonials</h6>
+                                    <h3 id="totalTestimonials">0</h3>
+                                </div>
+                                <i class="fas fa-quote-right fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Published</h6>
+                                    <h3 id="publishedTestimonials">0</h3>
+                                </div>
+                                <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Pending Review</h6>
+                                    <h3 id="pendingTestimonials">0</h3>
+                                </div>
+                                <i class="fas fa-clock fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Average Rating</h6>
+                                    <h3 id="averageRating">0.0</h3>
+                                </div>
+                                <i class="fas fa-star fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters and Controls -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" id="testimonialSearch" placeholder="Search testimonials...">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="published">Published</option>
+                                <option value="pending">Pending</option>
+                                <option value="draft">Draft</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="ratingFilter">
+                                <option value="">All Ratings</option>
+                                <option value="5">5 Stars</option>
+                                <option value="4">4 Stars</option>
+                                <option value="3">3 Stars</option>
+                                <option value="2">2 Stars</option>
+                                <option value="1">1 Star</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="sortBy">
+                                <option value="date_desc">Newest First</option>
+                                <option value="date_asc">Oldest First</option>
+                                <option value="rating_desc">Highest Rating</option>
+                                <option value="rating_asc">Lowest Rating</option>
+                                <option value="name_asc">Name A-Z</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="btn-group w-100">
+                                <button class="btn btn-outline-secondary active" id="gridView" onclick="toggleView('grid')">
+                                    <i class="fas fa-th"></i>
+                                </button>
+                                <button class="btn btn-outline-secondary" id="listView" onclick="toggleView('list')">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <button class="btn btn-outline-primary w-100" onclick="toggleSelectMode()">
+                                <i class="fas fa-check-square"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bulk Actions -->
+            <div class="bulk-actions" id="bulkActions">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span id="selectedCount">0</span> testimonials selected
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-success" onclick="bulkPublish()">
+                            <i class="fas fa-check"></i> Publish
+                        </button>
+                        <button class="btn btn-outline-warning" onclick="bulkUnpublish()">
+                            <i class="fas fa-eye-slash"></i> Unpublish
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="bulkFeature()">
+                            <i class="fas fa-star"></i> Feature
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="bulkDelete()">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testimonials Container -->
+            <div id="testimonialsContainer">
+                <!-- Testimonials will be loaded here -->
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Testimonials pagination" class="mt-4">
+                <ul class="pagination justify-content-center" id="testimonialsPagination">
+                    <!-- Pagination will be generated here -->
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Add/Edit Testimonial Modal -->
+    <div class="modal fade" id="testimonialModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="testimonialModalTitle">Add Testimonial</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="testimonialForm" class="testimonial-form">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="testimonialName" placeholder="Full Name" required>
+                                    <label for="testimonialName">Full Name *</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="email" class="form-control" id="testimonialEmail" placeholder="Email">
+                                    <label for="testimonialEmail">Email</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="testimonialPosition" placeholder="Position/Title">
+                                    <label for="testimonialPosition">Position/Title</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="testimonialOrganization" placeholder="Organization">
+                                    <label for="testimonialOrganization">Organization</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Rating *</label>
+                            <div class="star-rating" id="starRating">
+                                <span class="star" data-rating="1"><i class="fas fa-star"></i></span>
+                                <span class="star" data-rating="2"><i class="fas fa-star"></i></span>
+                                <span class="star" data-rating="3"><i class="fas fa-star"></i></span>
+                                <span class="star" data-rating="4"><i class="fas fa-star"></i></span>
+                                <span class="star" data-rating="5"><i class="fas fa-star"></i></span>
+                            </div>
+                            <input type="hidden" id="testimonialRating" value="5">
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <textarea class="form-control" id="testimonialText" placeholder="Testimonial text" required></textarea>
+                            <label for="testimonialText">Testimonial Text *</label>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Photo</label>
+                                    <input type="file" class="form-control" id="testimonialPhoto" accept="image/*">
+                                    <div class="form-text">Upload a photo of the person (optional)</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" id="testimonialStatus">
+                                        <option value="pending">Pending Review</option>
+                                        <option value="published">Published</option>
+                                        <option value="draft">Draft</option>
+                                        <option value="rejected">Rejected</option>
+                                    </select>
+                                    <label for="testimonialStatus">Status</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="testimonialFeatured">
+                                    <label class="form-check-label" for="testimonialFeatured">
+                                        Featured Testimonial
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="testimonialShowOnHomepage">
+                                    <label class="form-check-label" for="testimonialShowOnHomepage">
+                                        Show on Homepage
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <textarea class="form-control" id="testimonialNotes" placeholder="Internal notes"></textarea>
+                            <label for="testimonialNotes">Internal Notes</label>
+                        </div>
+                    </form>
+
+                    <!-- Preview -->
+                    <div class="testimonial-preview" id="testimonialPreview" style="display: none;">
+                        <h6>Preview</h6>
+                        <div id="previewContent">
+                            <!-- Preview will be shown here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-info" onclick="previewTestimonial()">
+                        <i class="fas fa-eye"></i> Preview
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="saveTestimonial()">
+                        <i class="fas fa-save"></i> Save Testimonial
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Testimonial Modal -->
+    <div class="modal fade" id="viewTestimonialModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Testimonial Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="viewTestimonialContent">
+                    <!-- Testimonial details will be shown here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="editCurrentTestimonial()">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        class TestimonialsManager {
+            constructor() {
+                this.testimonials = [];
+                this.selectedTestimonials = new Set();
+                this.currentView = 'grid';
+                this.selectMode = false;
+                this.currentTestimonial = null;
+                this.currentPage = 1;
+                this.itemsPerPage = 12;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadTestimonials();
+                this.updateStats();
+            }
+
+            setupEventListeners() {
+                // Search and filters
+                document.getElementById('testimonialSearch').addEventListener('input', () => this.filterTestimonials());
+                document.getElementById('statusFilter').addEventListener('change', () => this.filterTestimonials());
+                document.getElementById('ratingFilter').addEventListener('change', () => this.filterTestimonials());
+                document.getElementById('sortBy').addEventListener('change', () => this.filterTestimonials());
+
+                // Star rating
+                document.querySelectorAll('#starRating .star').forEach(star => {
+                    star.addEventListener('click', (e) => {
+                        const rating = parseInt(e.currentTarget.dataset.rating);
+                        this.setRating(rating);
+                    });
+
+                    star.addEventListener('mouseover', (e) => {
+                        const rating = parseInt(e.currentTarget.dataset.rating);
+                        this.highlightStars(rating);
+                    });
+                });
+
+                document.getElementById('starRating').addEventListener('mouseleave', () => {
+                    const currentRating = parseInt(document.getElementById('testimonialRating').value);
+                    this.highlightStars(currentRating);
+                });
+
+                // Form inputs for preview
+                ['testimonialName', 'testimonialText', 'testimonialPosition', 'testimonialOrganization'].forEach(id => {
+                    document.getElementById(id).addEventListener('input', () => {
+                        if (document.getElementById('testimonialPreview').style.display !== 'none') {
+                            this.updatePreview();
+                        }
+                    });
+                });
+            }
+
+            async loadTestimonials() {
+                try {
+                    // Simulate API call
+                    this.testimonials = this.getMockTestimonials();
+                    this.renderTestimonials();
+                    this.updateStats();
+                } catch (error) {
+                    console.error('Error loading testimonials:', error);
+                    this.showToast('Error loading testimonials: ' + error.message, 'error');
+                }
+            }
+
+            getMockTestimonials() {
+                return [
+                    {
+                        id: 1,
+                        name: 'Dr. Rajesh Kumar',
+                        email: 'rajesh.kumar@example.com',
+                        position: 'Human Rights Lawyer',
+                        organization: 'Legal Aid Society',
+                        rating: 5,
+                        text: 'BHRC has been instrumental in protecting human rights in our state. Their dedication and professionalism are commendable. I have worked with them on several cases and they always deliver excellent results.',
+                        photo: 'https://via.placeholder.com/100x100/007bff/ffffff?text=RK',
+                        status: 'published',
+                        featured: true,
+                        showOnHomepage: true,
+                        submittedDate: '2024-01-15T10:30:00Z',
+                        publishedDate: '2024-01-16T09:00:00Z',
+                        notes: 'Excellent testimonial from respected lawyer'
+                    },
+                    {
+                        id: 2,
+                        name: 'Priya Sharma',
+                        email: 'priya.sharma@example.com',
+                        position: 'Social Activist',
+                        organization: 'Women Rights Foundation',
+                        rating: 5,
+                        text: 'The commission helped me when I had nowhere else to turn. Their support and guidance were invaluable during my difficult time. Highly recommended for anyone seeking justice.',
+                        photo: 'https://via.placeholder.com/100x100/28a745/ffffff?text=PS',
+                        status: 'published',
+                        featured: false,
+                        showOnHomepage: true,
+                        submittedDate: '2024-01-18T14:20:00Z',
+                        publishedDate: '2024-01-19T10:15:00Z',
+                        notes: 'Powerful personal story'
+                    },
+                    {
+                        id: 3,
+                        name: 'Amit Patel',
+                        email: 'amit.patel@example.com',
+                        position: 'Journalist',
+                        organization: 'News Today',
+                        rating: 4,
+                        text: 'BHRC maintains transparency and accountability in their operations. As a journalist covering human rights issues, I appreciate their cooperation and openness.',
+                        photo: 'https://via.placeholder.com/100x100/ffc107/000000?text=AP',
+                        status: 'published',
+                        featured: false,
+                        showOnHomepage: false,
+                        submittedDate: '2024-01-20T16:45:00Z',
+                        publishedDate: '2024-01-21T11:30:00Z',
+                        notes: 'Media perspective'
+                    },
+                    {
+                        id: 4,
+                        name: 'Sunita Devi',
+                        email: 'sunita.devi@example.com',
+                        position: 'Community Leader',
+                        organization: 'Village Development Committee',
+                        rating: 5,
+                        text: 'The commission helped our village get justice when local authorities were not responsive. They are truly working for the people.',
+                        photo: 'https://via.placeholder.com/100x100/dc3545/ffffff?text=SD',
+                        status: 'pending',
+                        featured: false,
+                        showOnHomepage: false,
+                        submittedDate: '2024-01-22T12:15:00Z',
+                        publishedDate: null,
+                        notes: 'Needs verification of details'
+                    },
+                    {
+                        id: 5,
+                        name: 'Dr. Meera Gupta',
+                        email: 'meera.gupta@example.com',
+                        position: 'Professor',
+                        organization: 'University of Law',
+                        rating: 4,
+                        text: 'I have been following BHRC\'s work for years. Their commitment to human rights education and awareness is remarkable.',
+                        photo: 'https://via.placeholder.com/100x100/6f42c1/ffffff?text=MG',
+                        status: 'draft',
+                        featured: false,
+                        showOnHomepage: false,
+                        submittedDate: '2024-01-23T09:30:00Z',
+                        publishedDate: null,
+                        notes: 'Academic perspective - good for credibility'
+                    },
+                    {
+                        id: 6,
+                        name: 'Ravi Singh',
+                        email: 'ravi.singh@example.com',
+                        position: 'NGO Director',
+                        organization: 'Human Rights Watch Bharatiya',
+                        rating: 5,
+                        text: 'Excellent collaboration with BHRC on multiple projects. They are professional, efficient, and truly committed to their mission.',
+                        photo: 'https://via.placeholder.com/100x100/20c997/ffffff?text=RS',
+                        status: 'published',
+                        featured: true,
+                        showOnHomepage: true,
+                        submittedDate: '2024-01-25T15:20:00Z',
+                        publishedDate: '2024-01-26T08:45:00Z',
+                        notes: 'Partner organization testimonial'
+                    }
+                ];
+            }
+
+            renderTestimonials() {
+                const container = document.getElementById('testimonialsContainer');
+                
+                if (this.testimonials.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="fas fa-quote-right fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No testimonials found</h5>
+                            <p class="text-muted">Add your first testimonial</p>
+                            <button class="btn btn-primary" onclick="addTestimonial()">
+                                <i class="fas fa-plus"></i> Add Testimonial
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                if (this.currentView === 'grid') {
+                    this.renderTestimonialsGrid();
+                } else {
+                    this.renderTestimonialsList();
+                }
+            }
+
+            renderTestimonialsGrid() {
+                const container = document.getElementById('testimonialsContainer');
+                
+                const html = `
+                    <div class="testimonial-grid">
+                        ${this.testimonials.map(testimonial => `
+                            <div class="card testimonial-card ${testimonial.featured ? 'featured' : ''} ${testimonial.status === 'pending' ? 'pending' : ''}" 
+                                 data-testimonial-id="${testimonial.id}">
+                                ${this.selectMode ? `
+                                    <div class="position-absolute top-0 start-0 p-2" style="z-index: 10;">
+                                        <input type="checkbox" class="form-check-input testimonial-select" 
+                                               value="${testimonial.id}" onchange="toggleTestimonialSelection(${testimonial.id})">
+                                    </div>
+                                ` : ''}
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <img src="${testimonial.photo}" alt="${testimonial.name}" class="testimonial-avatar me-3">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">${testimonial.name}</h6>
+                                            <small class="text-muted">${testimonial.position}${testimonial.organization ? `, ${testimonial.organization}` : ''}</small>
+                                            <div class="rating-stars mt-1">
+                                                ${'★'.repeat(testimonial.rating)}${'☆'.repeat(5 - testimonial.rating)}
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge status-badge bg-${this.getStatusColor(testimonial.status)}">${testimonial.status}</span>
+                                            ${testimonial.featured ? '<br><span class="badge bg-warning mt-1">Featured</span>' : ''}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="testimonial-text mb-3">
+                                        ${testimonial.text.length > 150 ? testimonial.text.substring(0, 150) + '...' : testimonial.text}
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar"></i> ${new Date(testimonial.submittedDate).toLocaleDateString()}
+                                        </small>
+                                        <div class="btn-group">
+                                            <button class="btn btn-outline-primary btn-sm" onclick="viewTestimonial(${testimonial.id})" title="View">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-outline-success btn-sm" onclick="editTestimonial(${testimonial.id})" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            ${testimonial.status === 'pending' ? `
+                                                <button class="btn btn-outline-info btn-sm" onclick="approveTestimonial(${testimonial.id})" title="Approve">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            ` : ''}
+                                            <button class="btn btn-outline-danger btn-sm" onclick="deleteTestimonial(${testimonial.id})" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                container.innerHTML = html;
+            }
+
+            renderTestimonialsList() {
+                const container = document.getElementById('testimonialsContainer');
+                
+                const html = `
+                    <div class="testimonial-list">
+                        ${this.testimonials.map(testimonial => `
+                            <div class="testimonial-item" data-testimonial-id="${testimonial.id}">
+                                ${this.selectMode ? `
+                                    <input type="checkbox" class="form-check-input me-3 testimonial-select" 
+                                           value="${testimonial.id}" onchange="toggleTestimonialSelection(${testimonial.id})">
+                                ` : ''}
+                                <img src="${testimonial.photo}" alt="${testimonial.name}" class="testimonial-avatar me-3">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="mb-1">${testimonial.name}</h6>
+                                            <small class="text-muted">${testimonial.position}${testimonial.organization ? `, ${testimonial.organization}` : ''}</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge status-badge bg-${this.getStatusColor(testimonial.status)}">${testimonial.status}</span>
+                                            ${testimonial.featured ? '<br><span class="badge bg-warning mt-1">Featured</span>' : ''}
+                                        </div>
+                                    </div>
+                                    <div class="rating-stars mb-2">
+                                        ${'★'.repeat(testimonial.rating)}${'☆'.repeat(5 - testimonial.rating)}
+                                    </div>
+                                    <p class="mb-2">${testimonial.text.length > 200 ? testimonial.text.substring(0, 200) + '...' : testimonial.text}</p>
+                                    <div class="d-flex gap-3 text-muted small">
+                                        <span><i class="fas fa-calendar"></i> ${new Date(testimonial.submittedDate).toLocaleDateString()}</span>
+                                        ${testimonial.publishedDate ? `<span><i class="fas fa-globe"></i> Published ${new Date(testimonial.publishedDate).toLocaleDateString()}</span>` : ''}
+                                        ${testimonial.showOnHomepage ? '<span><i class="fas fa-home"></i> Homepage</span>' : ''}
+                                    </div>
+                                </div>
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="viewTestimonial(${testimonial.id})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline-success btn-sm" onclick="editTestimonial(${testimonial.id})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    ${testimonial.status === 'pending' ? `
+                                        <button class="btn btn-outline-info btn-sm" onclick="approveTestimonial(${testimonial.id})">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    ` : ''}
+                                    <button class="btn btn-outline-danger btn-sm" onclick="deleteTestimonial(${testimonial.id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                container.innerHTML = html;
+            }
+
+            getStatusColor(status) {
+                const colors = {
+                    'published': 'success',
+                    'pending': 'warning',
+                    'draft': 'secondary',
+                    'rejected': 'danger'
+                };
+                return colors[status] || 'secondary';
+            }
+
+            updateStats() {
+                const total = this.testimonials.length;
+                const published = this.testimonials.filter(t => t.status === 'published').length;
+                const pending = this.testimonials.filter(t => t.status === 'pending').length;
+                const avgRating = total > 0 ? (this.testimonials.reduce((sum, t) => sum + t.rating, 0) / total).toFixed(1) : '0.0';
+
+                document.getElementById('totalTestimonials').textContent = total;
+                document.getElementById('publishedTestimonials').textContent = published;
+                document.getElementById('pendingTestimonials').textContent = pending;
+                document.getElementById('averageRating').textContent = avgRating;
+            }
+
+            setRating(rating) {
+                document.getElementById('testimonialRating').value = rating;
+                this.highlightStars(rating);
+            }
+
+            highlightStars(rating) {
+                document.querySelectorAll('#starRating .star').forEach((star, index) => {
+                    star.classList.toggle('active', index < rating);
+                });
+            }
+
+            toggleView(view) {
+                this.currentView = view;
+                document.getElementById('gridView').classList.toggle('active', view === 'grid');
+                document.getElementById('listView').classList.toggle('active', view === 'list');
+                this.renderTestimonials();
+            }
+
+            toggleSelectMode() {
+                this.selectMode = !this.selectMode;
+                this.selectedTestimonials.clear();
+                this.updateBulkActions();
+                this.renderTestimonials();
+            }
+
+            toggleTestimonialSelection(id) {
+                if (this.selectedTestimonials.has(id)) {
+                    this.selectedTestimonials.delete(id);
+                } else {
+                    this.selectedTestimonials.add(id);
+                }
+                this.updateBulkActions();
+            }
+
+            updateBulkActions() {
+                const bulkActions = document.getElementById('bulkActions');
+                const selectedCount = document.getElementById('selectedCount');
+                
+                selectedCount.textContent = this.selectedTestimonials.size;
+                
+                if (this.selectedTestimonials.size > 0) {
+                    bulkActions.classList.add('show');
+                } else {
+                    bulkActions.classList.remove('show');
+                }
+            }
+
+            filterTestimonials() {
+                // Implementation for filtering testimonials
+                this.renderTestimonials();
+            }
+
+            updatePreview() {
+                const name = document.getElementById('testimonialName').value;
+                const text = document.getElementById('testimonialText').value;
+                const position = document.getElementById('testimonialPosition').value;
+                const organization = document.getElementById('testimonialOrganization').value;
+                const rating = parseInt(document.getElementById('testimonialRating').value);
+
+                const previewContent = document.getElementById('previewContent');
+                previewContent.innerHTML = `
+                    <div class="card testimonial-card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="https://via.placeholder.com/60x60/007bff/ffffff?text=${name.charAt(0) || 'U'}" 
+                                     alt="${name}" class="testimonial-avatar me-3">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">${name || 'Name'}</h6>
+                                    <small class="text-muted">${position}${organization ? `, ${organization}` : ''}</small>
+                                    <div class="rating-stars mt-1">
+                                        ${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="testimonial-text">
+                                ${text || 'Testimonial text will appear here...'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            showToast(message, type = 'info') {
+                const toastContainer = document.getElementById('toastContainer');
+                const toastId = 'toast-' + Date.now();
+                
+                const toastHtml = `
+                    <div class="toast" id="${toastId}" role="alert">
+                        <div class="toast-header">
+                            <i class="fas fa-${type === 'success' ? 'check-circle text-success' : 
+                                type === 'error' ? 'exclamation-circle text-danger' : 
+                                'info-circle text-info'}"></i>
+                            <strong class="me-auto ms-2">Testimonials</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                        </div>
+                        <div class="toast-body">${message}</div>
+                    </div>
+                `;
+                
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                const toast = new bootstrap.Toast(document.getElementById(toastId));
+                toast.show();
+            }
+        }
+
+        // Global functions
+        function addTestimonial() {
+            testimonialsManager.currentTestimonial = null;
+            document.getElementById('testimonialModalTitle').textContent = 'Add Testimonial';
+            document.getElementById('testimonialForm').reset();
+            document.getElementById('testimonialRating').value = '5';
+            testimonialsManager.highlightStars(5);
+            document.getElementById('testimonialPreview').style.display = 'none';
+            
+            const modal = new bootstrap.Modal(document.getElementById('testimonialModal'));
+            modal.show();
+        }
+
+        function editTestimonial(id) {
+            const testimonial = testimonialsManager.testimonials.find(t => t.id === id);
+            if (!testimonial) return;
+
+            testimonialsManager.currentTestimonial = testimonial;
+            document.getElementById('testimonialModalTitle').textContent = 'Edit Testimonial';
+            
+            // Populate form
+            document.getElementById('testimonialName').value = testimonial.name;
+            document.getElementById('testimonialEmail').value = testimonial.email || '';
+            document.getElementById('testimonialPosition').value = testimonial.position || '';
+            document.getElementById('testimonialOrganization').value = testimonial.organization || '';
+            document.getElementById('testimonialText').value = testimonial.text;
+            document.getElementById('testimonialStatus').value = testimonial.status;
+            document.getElementById('testimonialFeatured').checked = testimonial.featured;
+            document.getElementById('testimonialShowOnHomepage').checked = testimonial.showOnHomepage;
+            document.getElementById('testimonialNotes').value = testimonial.notes || '';
+            document.getElementById('testimonialRating').value = testimonial.rating;
+            testimonialsManager.highlightStars(testimonial.rating);
+            
+            document.getElementById('testimonialPreview').style.display = 'none';
+            
+            const modal = new bootstrap.Modal(document.getElementById('testimonialModal'));
+            modal.show();
+        }
+
+        function viewTestimonial(id) {
+            const testimonial = testimonialsManager.testimonials.find(t => t.id === id);
+            if (!testimonial) return;
+
+            testimonialsManager.currentTestimonial = testimonial;
+            
+            const content = document.getElementById('viewTestimonialContent');
+            content.innerHTML = `
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card testimonial-card ${testimonial.featured ? 'featured' : ''}">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <img src="${testimonial.photo}" alt="${testimonial.name}" class="testimonial-avatar me-3">
+                                    <div class="flex-grow-1">
+                                        <h5 class="mb-1">${testimonial.name}</h5>
+                                        <p class="text-muted mb-1">${testimonial.position}${testimonial.organization ? `, ${testimonial.organization}` : ''}</p>
+                                        <div class="rating-stars">
+                                            ${'★'.repeat(testimonial.rating)}${'☆'.repeat(5 - testimonial.rating)}
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge status-badge bg-${testimonialsManager.getStatusColor(testimonial.status)}">${testimonial.status}</span>
+                                        ${testimonial.featured ? '<br><span class="badge bg-warning mt-1">Featured</span>' : ''}
+                                    </div>
+                                </div>
+                                <div class="testimonial-text">
+                                    ${testimonial.text}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Details</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Email:</strong></td><td>${testimonial.email || 'N/A'}</td></tr>
+                            <tr><td><strong>Status:</strong></td><td><span class="badge bg-${testimonialsManager.getStatusColor(testimonial.status)}">${testimonial.status}</span></td></tr>
+                            <tr><td><strong>Rating:</strong></td><td>${testimonial.rating}/5 stars</td></tr>
+                            <tr><td><strong>Featured:</strong></td><td>${testimonial.featured ? 'Yes' : 'No'}</td></tr>
+                            <tr><td><strong>Homepage:</strong></td><td>${testimonial.showOnHomepage ? 'Yes' : 'No'}</td></tr>
+                            <tr><td><strong>Submitted:</strong></td><td>${new Date(testimonial.submittedDate).toLocaleString()}</td></tr>
+                            ${testimonial.publishedDate ? `<tr><td><strong>Published:</strong></td><td>${new Date(testimonial.publishedDate).toLocaleString()}</td></tr>` : ''}
+                        </table>
+                        
+                        ${testimonial.notes ? `
+                            <h6 class="mt-3">Internal Notes</h6>
+                            <p class="text-muted">${testimonial.notes}</p>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            const modal = new bootstrap.Modal(document.getElementById('viewTestimonialModal'));
+            modal.show();
+        }
+
+        function editCurrentTestimonial() {
+            bootstrap.Modal.getInstance(document.getElementById('viewTestimonialModal')).hide();
+            setTimeout(() => {
+                editTestimonial(testimonialsManager.currentTestimonial.id);
+            }, 300);
+        }
+
+        function previewTestimonial() {
+            testimonialsManager.updatePreview();
+            document.getElementById('testimonialPreview').style.display = 'block';
+        }
+
+        function saveTestimonial() {
+            const form = document.getElementById('testimonialForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const isEdit = testimonialsManager.currentTestimonial !== null;
+            const message = isEdit ? 'Testimonial updated successfully!' : 'Testimonial added successfully!';
+            
+            testimonialsManager.showToast(message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('testimonialModal')).hide();
+            testimonialsManager.loadTestimonials();
+        }
+
+        function approveTestimonial(id) {
+            if (confirm('Approve this testimonial for publication?')) {
+                testimonialsManager.showToast('Testimonial approved and published!', 'success');
+                testimonialsManager.loadTestimonials();
+            }
+        }
+
+        function deleteTestimonial(id) {
+            const testimonial = testimonialsManager.testimonials.find(t => t.id === id);
+            if (!testimonial) return;
+
+            if (confirm(`Are you sure you want to delete the testimonial from "${testimonial.name}"? This action cannot be undone.`)) {
+                testimonialsManager.showToast('Testimonial deleted successfully!', 'success');
+                testimonialsManager.loadTestimonials();
+            }
+        }
+
+        function toggleTestimonialSelection(id) {
+            testimonialsManager.toggleTestimonialSelection(id);
+        }
+
+        function bulkPublish() {
+            if (testimonialsManager.selectedTestimonials.size === 0) return;
+            
+            if (confirm(`Publish ${testimonialsManager.selectedTestimonials.size} selected testimonials?`)) {
+                testimonialsManager.showToast(`${testimonialsManager.selectedTestimonials.size} testimonials published!`, 'success');
+                testimonialsManager.selectedTestimonials.clear();
+                testimonialsManager.updateBulkActions();
+                testimonialsManager.loadTestimonials();
+            }
+        }
+
+        function bulkUnpublish() {
+            if (testimonialsManager.selectedTestimonials.size === 0) return;
+            
+            if (confirm(`Unpublish ${testimonialsManager.selectedTestimonials.size} selected testimonials?`)) {
+                testimonialsManager.showToast(`${testimonialsManager.selectedTestimonials.size} testimonials unpublished!`, 'success');
+                testimonialsManager.selectedTestimonials.clear();
+                testimonialsManager.updateBulkActions();
+                testimonialsManager.loadTestimonials();
+            }
+        }
+
+        function bulkFeature() {
+            if (testimonialsManager.selectedTestimonials.size === 0) return;
+            
+            if (confirm(`Mark ${testimonialsManager.selectedTestimonials.size} selected testimonials as featured?`)) {
+                testimonialsManager.showToast(`${testimonialsManager.selectedTestimonials.size} testimonials marked as featured!`, 'success');
+                testimonialsManager.selectedTestimonials.clear();
+                testimonialsManager.updateBulkActions();
+                testimonialsManager.loadTestimonials();
+            }
+        }
+
+        function bulkDelete() {
+            if (testimonialsManager.selectedTestimonials.size === 0) return;
+            
+            if (confirm(`Are you sure you want to delete ${testimonialsManager.selectedTestimonials.size} selected testimonials? This action cannot be undone.`)) {
+                testimonialsManager.showToast(`${testimonialsManager.selectedTestimonials.size} testimonials deleted!`, 'success');
+                testimonialsManager.selectedTestimonials.clear();
+                testimonialsManager.updateBulkActions();
+                testimonialsManager.loadTestimonials();
+            }
+        }
+
+        function exportTestimonials() {
+            testimonialsManager.showToast('Exporting testimonials...', 'info');
+            // Simulate export
+            setTimeout(() => {
+                testimonialsManager.showToast('Testimonials exported successfully!', 'success');
+            }, 1500);
+        }
+
+        function testimonialSettings() {
+            testimonialsManager.showToast('Testimonial settings feature coming soon!', 'info');
+        }
+
+        function toggleView(view) {
+            testimonialsManager.toggleView(view);
+        }
+
+        function toggleSelectMode() {
+            testimonialsManager.toggleSelectMode();
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '../auth/login.html';
+            }
+        }
+
+        // Initialize the testimonials manager
+        let testimonialsManager;
+        document.addEventListener('DOMContentLoaded', function() {
+            testimonialsManager = new TestimonialsManager();
+        });
+    </script>
+</body>
+</html>
+

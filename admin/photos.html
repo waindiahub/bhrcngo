@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photos - BHRC Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="../assets/css/common.css" rel="stylesheet">
+    <link href="../assets/css/admin.css" rel="stylesheet">
+    <style>
+        .photo-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        .photo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .photo-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .photo-card:hover img {
+            transform: scale(1.05);
+        }
+        .photo-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .photo-card:hover .photo-overlay {
+            opacity: 1;
+        }
+        .photo-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .photo-actions .btn {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .photo-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            color: white;
+            padding: 20px 15px 15px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        .photo-card:hover .photo-info {
+            transform: translateY(0);
+        }
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .photo-list .photo-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.2s ease;
+        }
+        .photo-list .photo-item:hover {
+            background: #f8f9fa;
+            border-color: #007bff;
+        }
+        .photo-list .photo-thumbnail {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-right: 15px;
+        }
+        .bulk-actions {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .bulk-actions.show {
+            display: block;
+        }
+        .photo-upload-zone {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .photo-upload-zone:hover {
+            border-color: #007bff;
+            background: #f8f9fa;
+        }
+        .photo-upload-zone.dragover {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+        .photo-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+        }
+        .tag-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            min-height: 38px;
+        }
+        .tag {
+            background: #007bff;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .tag .remove-tag {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+        .lightbox-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            padding: 15px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .lightbox-nav.prev {
+            left: 20px;
+        }
+        .lightbox-nav.next {
+            right: 20px;
+        }
+        .photo-stats {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="fas fa-shield-alt"></i> BHRC Admin</h4>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-link">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="members.html" class="nav-link">
+                <i class="fas fa-users"></i> Members
+            </a>
+            <a href="associates.html" class="nav-link">
+                <i class="fas fa-handshake"></i> Associates
+            </a>
+            <a href="activities.html" class="nav-link">
+                <i class="fas fa-calendar-alt"></i> Activities
+            </a>
+            <a href="events.html" class="nav-link">
+                <i class="fas fa-calendar-check"></i> Events
+            </a>
+            <a href="gallery.html" class="nav-link">
+                <i class="fas fa-images"></i> Gallery
+            </a>
+            <a href="photos.html" class="nav-link active">
+                <i class="fas fa-camera"></i> Photos
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-left">
+                <button class="btn btn-link sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1>Photos</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-success me-2" onclick="uploadPhotos()">
+                    <i class="fas fa-upload"></i> Upload Photos
+                </button>
+                <button class="btn btn-outline-primary me-2" onclick="createAlbum()">
+                    <i class="fas fa-folder-plus"></i> Create Album
+                </button>
+                <button class="btn btn-outline-info me-2" onclick="manageCategories()">
+                    <i class="fas fa-tags"></i> Categories
+                </button>
+                <div class="dropdown">
+                    <button class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle"></i> Admin
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="content-wrapper">
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Total Photos</h6>
+                                    <h3 id="totalPhotos">0</h3>
+                                </div>
+                                <i class="fas fa-camera fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Albums</h6>
+                                    <h3 id="totalAlbums">0</h3>
+                                </div>
+                                <i class="fas fa-folder fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Storage Used</h6>
+                                    <h3 id="storageUsed">0 MB</h3>
+                                </div>
+                                <i class="fas fa-hdd fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Total Views</h6>
+                                    <h3 id="totalViews">0</h3>
+                                </div>
+                                <i class="fas fa-eye fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters and Controls -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" id="photoSearch" placeholder="Search photos...">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="albumFilter">
+                                <option value="">All Albums</option>
+                                <option value="events">Events</option>
+                                <option value="activities">Activities</option>
+                                <option value="gallery">Gallery</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="categoryFilter">
+                                <option value="">All Categories</option>
+                                <option value="official">Official</option>
+                                <option value="events">Events</option>
+                                <option value="meetings">Meetings</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="sortBy">
+                                <option value="date_desc">Newest First</option>
+                                <option value="date_asc">Oldest First</option>
+                                <option value="name_asc">Name A-Z</option>
+                                <option value="size_desc">Largest First</option>
+                                <option value="views_desc">Most Viewed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="btn-group w-100">
+                                <button class="btn btn-outline-secondary active" id="gridView" onclick="toggleView('grid')">
+                                    <i class="fas fa-th"></i>
+                                </button>
+                                <button class="btn btn-outline-secondary" id="listView" onclick="toggleView('list')">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <button class="btn btn-outline-primary w-100" onclick="toggleSelectMode()">
+                                <i class="fas fa-check-square"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bulk Actions -->
+            <div class="bulk-actions" id="bulkActions">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span id="selectedCount">0</span> photos selected
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary" onclick="bulkMoveToAlbum()">
+                            <i class="fas fa-folder"></i> Move to Album
+                        </button>
+                        <button class="btn btn-outline-success" onclick="bulkAddTags()">
+                            <i class="fas fa-tags"></i> Add Tags
+                        </button>
+                        <button class="btn btn-outline-info" onclick="bulkDownload()">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="bulkDelete()">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Photos Container -->
+            <div id="photosContainer">
+                <!-- Photos will be loaded here -->
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Photos pagination" class="mt-4">
+                <ul class="pagination justify-content-center" id="photosPagination">
+                    <!-- Pagination will be generated here -->
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Upload Photos Modal -->
+    <div class="modal fade" id="uploadModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload Photos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="photo-upload-zone" id="uploadZone">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                        <h5>Drag & Drop Photos Here</h5>
+                        <p class="text-muted">or click to browse files</p>
+                        <input type="file" id="photoFiles" multiple accept="image/*" style="display: none;">
+                        <button class="btn btn-primary" onclick="document.getElementById('photoFiles').click()">
+                            <i class="fas fa-folder-open"></i> Browse Files
+                        </button>
+                    </div>
+
+                    <div id="uploadPreview" class="mt-4" style="display: none;">
+                        <h6>Selected Photos</h6>
+                        <div id="previewContainer" class="row">
+                            <!-- Preview images will be shown here -->
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Album</label>
+                            <select class="form-select" id="uploadAlbum">
+                                <option value="">Select Album</option>
+                                <option value="events">Events</option>
+                                <option value="activities">Activities</option>
+                                <option value="gallery">Gallery</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" id="uploadCategory">
+                                <option value="">Select Category</option>
+                                <option value="official">Official</option>
+                                <option value="events">Events</option>
+                                <option value="meetings">Meetings</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label">Tags</label>
+                        <div class="tag-input" id="tagInput">
+                            <input type="text" placeholder="Add tags..." onkeypress="addTag(event)">
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" id="uploadDescription" rows="3" placeholder="Add description for all photos..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="startUpload()">
+                        <i class="fas fa-upload"></i> Upload Photos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Photo Details Modal -->
+    <div class="modal fade" id="photoDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="photoDetailsTitle">Photo Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <img id="photoDetailsImage" src="" alt="Photo" class="photo-preview">
+                        </div>
+                        <div class="col-md-4">
+                            <form id="photoDetailsForm">
+                                <div class="mb-3">
+                                    <label class="form-label">Title</label>
+                                    <input type="text" class="form-control" id="photoTitle">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Description</label>
+                                    <textarea class="form-control" id="photoDescription" rows="3"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Album</label>
+                                    <select class="form-select" id="photoAlbum">
+                                        <option value="">Select Album</option>
+                                        <option value="events">Events</option>
+                                        <option value="activities">Activities</option>
+                                        <option value="gallery">Gallery</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Category</label>
+                                    <select class="form-select" id="photoCategory">
+                                        <option value="">Select Category</option>
+                                        <option value="official">Official</option>
+                                        <option value="events">Events</option>
+                                        <option value="meetings">Meetings</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Tags</label>
+                                    <div class="tag-input" id="photoTagInput">
+                                        <input type="text" placeholder="Add tags..." onkeypress="addPhotoTag(event)">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Alt Text</label>
+                                    <input type="text" class="form-control" id="photoAltText">
+                                </div>
+                            </form>
+
+                            <div class="mt-4">
+                                <h6>Photo Information</h6>
+                                <table class="table table-sm">
+                                    <tr><td><strong>File Size:</strong></td><td id="photoFileSize">-</td></tr>
+                                    <tr><td><strong>Dimensions:</strong></td><td id="photoDimensions">-</td></tr>
+                                    <tr><td><strong>Upload Date:</strong></td><td id="photoUploadDate">-</td></tr>
+                                    <tr><td><strong>Views:</strong></td><td id="photoViews">-</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-outline-info" onclick="downloadPhoto()">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="savePhotoDetails()">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <div class="lightbox-controls">
+            <button class="btn btn-light btn-sm" onclick="downloadCurrentPhoto()">
+                <i class="fas fa-download"></i>
+            </button>
+            <button class="btn btn-light btn-sm" onclick="closeLightbox()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <button class="lightbox-nav prev" onclick="previousPhoto(event)">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <img id="lightboxImage" src="" alt="Photo">
+        <button class="lightbox-nav next" onclick="nextPhoto(event)">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        class PhotosManager {
+            constructor() {
+                this.photos = [];
+                this.albums = [];
+                this.categories = [];
+                this.selectedPhotos = new Set();
+                this.currentView = 'grid';
+                this.selectMode = false;
+                this.currentLightboxIndex = 0;
+                this.currentPage = 1;
+                this.itemsPerPage = 20;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadData();
+                this.updateStats();
+            }
+
+            setupEventListeners() {
+                // Search and filters
+                document.getElementById('photoSearch').addEventListener('input', () => this.filterPhotos());
+                document.getElementById('albumFilter').addEventListener('change', () => this.filterPhotos());
+                document.getElementById('categoryFilter').addEventListener('change', () => this.filterPhotos());
+                document.getElementById('sortBy').addEventListener('change', () => this.filterPhotos());
+
+                // Upload zone drag and drop
+                const uploadZone = document.getElementById('uploadZone');
+                uploadZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.add('dragover');
+                });
+
+                uploadZone.addEventListener('dragleave', () => {
+                    uploadZone.classList.remove('dragover');
+                });
+
+                uploadZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.remove('dragover');
+                    const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+                    this.handleFileSelection(files);
+                });
+
+                uploadZone.addEventListener('click', () => {
+                    document.getElementById('photoFiles').click();
+                });
+
+                // File input change
+                document.getElementById('photoFiles').addEventListener('change', (e) => {
+                    this.handleFileSelection(Array.from(e.target.files));
+                });
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.closeLightbox();
+                    } else if (e.key === 'ArrowLeft') {
+                        this.previousPhoto(e);
+                    } else if (e.key === 'ArrowRight') {
+                        this.nextPhoto(e);
+                    }
+                });
+            }
+
+            async loadData() {
+                try {
+                    // Simulate API calls
+                    this.photos = this.getMockPhotos();
+                    this.albums = this.getMockAlbums();
+                    this.categories = this.getMockCategories();
+                    
+                    this.renderPhotos();
+                    this.updateStats();
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    this.showToast('Error loading data: ' + error.message, 'error');
+                }
+            }
+
+            getMockPhotos() {
+                return [
+                    {
+                        id: 1,
+                        title: 'BHRC Annual Meeting 2024',
+                        filename: 'meeting-2024-01.jpg',
+                        url: 'https://via.placeholder.com/400x300/007bff/ffffff?text=Meeting+2024',
+                        thumbnail: 'https://via.placeholder.com/200x150/007bff/ffffff?text=Meeting+2024',
+                        description: 'Annual meeting with all commission members',
+                        album: 'events',
+                        category: 'official',
+                        tags: ['meeting', 'annual', '2024', 'commission'],
+                        altText: 'BHRC Annual Meeting 2024',
+                        fileSize: 2.5,
+                        dimensions: '1920x1080',
+                        uploadDate: '2024-01-15T10:30:00Z',
+                        views: 150,
+                        uploader: 'Admin'
+                    },
+                    {
+                        id: 2,
+                        title: 'Human Rights Workshop',
+                        filename: 'workshop-2024-01.jpg',
+                        url: 'https://via.placeholder.com/400x300/28a745/ffffff?text=Workshop',
+                        thumbnail: 'https://via.placeholder.com/200x150/28a745/ffffff?text=Workshop',
+                        description: 'Educational workshop on human rights awareness',
+                        album: 'activities',
+                        category: 'events',
+                        tags: ['workshop', 'education', 'awareness', 'rights'],
+                        altText: 'Human Rights Workshop',
+                        fileSize: 1.8,
+                        dimensions: '1600x900',
+                        uploadDate: '2024-01-20T14:15:00Z',
+                        views: 89,
+                        uploader: 'Staff'
+                    },
+                    {
+                        id: 3,
+                        title: 'Legal Aid Camp',
+                        filename: 'legal-aid-camp.jpg',
+                        url: 'https://via.placeholder.com/400x300/ffc107/000000?text=Legal+Aid',
+                        thumbnail: 'https://via.placeholder.com/200x150/ffc107/000000?text=Legal+Aid',
+                        description: 'Free legal aid camp for rural communities',
+                        album: 'activities',
+                        category: 'events',
+                        tags: ['legal', 'aid', 'camp', 'rural', 'community'],
+                        altText: 'Legal Aid Camp',
+                        fileSize: 3.2,
+                        dimensions: '2048x1152',
+                        uploadDate: '2024-01-18T09:45:00Z',
+                        views: 234,
+                        uploader: 'Legal Team'
+                    },
+                    {
+                        id: 4,
+                        title: 'Commission Office',
+                        filename: 'office-building.jpg',
+                        url: 'https://via.placeholder.com/400x300/dc3545/ffffff?text=Office',
+                        thumbnail: 'https://via.placeholder.com/200x150/dc3545/ffffff?text=Office',
+                        description: 'BHRC main office building',
+                        album: 'gallery',
+                        category: 'official',
+                        tags: ['office', 'building', 'headquarters'],
+                        altText: 'BHRC Office Building',
+                        fileSize: 4.1,
+                        dimensions: '2560x1440',
+                        uploadDate: '2024-01-10T16:20:00Z',
+                        views: 67,
+                        uploader: 'Admin'
+                    },
+                    {
+                        id: 5,
+                        title: 'Community Outreach',
+                        filename: 'outreach-program.jpg',
+                        url: 'https://via.placeholder.com/400x300/6f42c1/ffffff?text=Outreach',
+                        thumbnail: 'https://via.placeholder.com/200x150/6f42c1/ffffff?text=Outreach',
+                        description: 'Community outreach program in rural areas',
+                        album: 'activities',
+                        category: 'events',
+                        tags: ['outreach', 'community', 'rural', 'program'],
+                        altText: 'Community Outreach Program',
+                        fileSize: 2.9,
+                        dimensions: '1920x1280',
+                        uploadDate: '2024-01-22T11:30:00Z',
+                        views: 112,
+                        uploader: 'Outreach Team'
+                    },
+                    {
+                        id: 6,
+                        title: 'Training Session',
+                        filename: 'training-session.jpg',
+                        url: 'https://via.placeholder.com/400x300/20c997/ffffff?text=Training',
+                        thumbnail: 'https://via.placeholder.com/200x150/20c997/ffffff?text=Training',
+                        description: 'Staff training on human rights procedures',
+                        album: 'events',
+                        category: 'meetings',
+                        tags: ['training', 'staff', 'procedures', 'education'],
+                        altText: 'Staff Training Session',
+                        fileSize: 1.6,
+                        dimensions: '1440x960',
+                        uploadDate: '2024-01-25T13:45:00Z',
+                        views: 45,
+                        uploader: 'HR Team'
+                    }
+                ];
+            }
+
+            getMockAlbums() {
+                return [
+                    { id: 1, name: 'events', title: 'Events', photoCount: 25 },
+                    { id: 2, name: 'activities', title: 'Activities', photoCount: 18 },
+                    { id: 3, name: 'gallery', title: 'Gallery', photoCount: 12 }
+                ];
+            }
+
+            getMockCategories() {
+                return [
+                    { id: 1, name: 'official', title: 'Official', photoCount: 15 },
+                    { id: 2, name: 'events', title: 'Events', photoCount: 28 },
+                    { id: 3, name: 'meetings', title: 'Meetings', photoCount: 12 }
+                ];
+            }
+
+            renderPhotos() {
+                const container = document.getElementById('photosContainer');
+                
+                if (this.photos.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="fas fa-camera fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No photos found</h5>
+                            <p class="text-muted">Upload your first photos</p>
+                            <button class="btn btn-primary" onclick="uploadPhotos()">
+                                <i class="fas fa-upload"></i> Upload Photos
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                if (this.currentView === 'grid') {
+                    this.renderPhotosGrid();
+                } else {
+                    this.renderPhotosList();
+                }
+            }
+
+            renderPhotosGrid() {
+                const container = document.getElementById('photosContainer');
+                
+                const html = `
+                    <div class="photo-grid">
+                        ${this.photos.map((photo, index) => `
+                            <div class="photo-card" data-photo-id="${photo.id}">
+                                ${this.selectMode ? `
+                                    <div class="position-absolute top-0 start-0 p-2" style="z-index: 10;">
+                                        <input type="checkbox" class="form-check-input photo-select" 
+                                               value="${photo.id}" onchange="togglePhotoSelection(${photo.id})">
+                                    </div>
+                                ` : ''}
+                                <img src="${photo.thumbnail}" alt="${photo.altText}" 
+                                     onclick="openLightbox(${index})">
+                                <div class="photo-overlay">
+                                    <div class="photo-actions">
+                                        <button class="btn btn-light" onclick="viewPhotoDetails(${photo.id})" title="Details">
+                                            <i class="fas fa-info"></i>
+                                        </button>
+                                        <button class="btn btn-light" onclick="editPhoto(${photo.id})" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-light" onclick="downloadPhoto(${photo.id})" title="Download">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button class="btn btn-danger" onclick="deletePhoto(${photo.id})" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="photo-info">
+                                    <h6 class="mb-1">${photo.title}</h6>
+                                    <small>
+                                        <i class="fas fa-eye"></i> ${photo.views} views<br>
+                                        <i class="fas fa-calendar"></i> ${new Date(photo.uploadDate).toLocaleDateString()}
+                                    </small>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                container.innerHTML = html;
+            }
+
+            renderPhotosList() {
+                const container = document.getElementById('photosContainer');
+                
+                const html = `
+                    <div class="photo-list">
+                        ${this.photos.map(photo => `
+                            <div class="photo-item" data-photo-id="${photo.id}">
+                                ${this.selectMode ? `
+                                    <input type="checkbox" class="form-check-input me-3 photo-select" 
+                                           value="${photo.id}" onchange="togglePhotoSelection(${photo.id})">
+                                ` : ''}
+                                <img src="${photo.thumbnail}" alt="${photo.altText}" class="photo-thumbnail">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">${photo.title}</h6>
+                                    <p class="text-muted mb-1">${photo.description}</p>
+                                    <div class="d-flex gap-3 text-muted small">
+                                        <span><i class="fas fa-folder"></i> ${photo.album}</span>
+                                        <span><i class="fas fa-tag"></i> ${photo.category}</span>
+                                        <span><i class="fas fa-eye"></i> ${photo.views} views</span>
+                                        <span><i class="fas fa-calendar"></i> ${new Date(photo.uploadDate).toLocaleDateString()}</span>
+                                        <span><i class="fas fa-user"></i> ${photo.uploader}</span>
+                                    </div>
+                                </div>
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="viewPhotoDetails(${photo.id})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline-success btn-sm" onclick="editPhoto(${photo.id})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-info btn-sm" onclick="downloadPhoto(${photo.id})">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm" onclick="deletePhoto(${photo.id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                container.innerHTML = html;
+            }
+
+            updateStats() {
+                const totalPhotos = this.photos.length;
+                const totalAlbums = this.albums.length;
+                const storageUsed = this.photos.reduce((sum, photo) => sum + photo.fileSize, 0);
+                const totalViews = this.photos.reduce((sum, photo) => sum + photo.views, 0);
+
+                document.getElementById('totalPhotos').textContent = totalPhotos;
+                document.getElementById('totalAlbums').textContent = totalAlbums;
+                document.getElementById('storageUsed').textContent = storageUsed.toFixed(1) + ' MB';
+                document.getElementById('totalViews').textContent = totalViews.toLocaleString();
+            }
+
+            handleFileSelection(files) {
+                if (files.length === 0) return;
+
+                const previewContainer = document.getElementById('previewContainer');
+                const uploadPreview = document.getElementById('uploadPreview');
+                
+                previewContainer.innerHTML = '';
+                
+                files.forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const previewHtml = `
+                            <div class="col-md-3 mb-3">
+                                <div class="card">
+                                    <img src="${e.target.result}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                                    <div class="card-body p-2">
+                                        <small class="text-muted">${file.name}</small><br>
+                                        <small class="text-muted">${(file.size / 1024 / 1024).toFixed(2)} MB</small>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        previewContainer.insertAdjacentHTML('beforeend', previewHtml);
+                    };
+                    reader.readAsDataURL(file);
+                });
+
+                uploadPreview.style.display = 'block';
+            }
+
+            openLightbox(index) {
+                this.currentLightboxIndex = index;
+                const photo = this.photos[index];
+                
+                document.getElementById('lightboxImage').src = photo.url;
+                document.getElementById('lightbox').style.display = 'flex';
+                
+                // Increment view count
+                photo.views++;
+                this.updateStats();
+            }
+
+            closeLightbox() {
+                document.getElementById('lightbox').style.display = 'none';
+            }
+
+            previousPhoto(event) {
+                event.stopPropagation();
+                if (this.currentLightboxIndex > 0) {
+                    this.openLightbox(this.currentLightboxIndex - 1);
+                }
+            }
+
+            nextPhoto(event) {
+                event.stopPropagation();
+                if (this.currentLightboxIndex < this.photos.length - 1) {
+                    this.openLightbox(this.currentLightboxIndex + 1);
+                }
+            }
+
+            toggleView(view) {
+                this.currentView = view;
+                document.getElementById('gridView').classList.toggle('active', view === 'grid');
+                document.getElementById('listView').classList.toggle('active', view === 'list');
+                this.renderPhotos();
+            }
+
+            toggleSelectMode() {
+                this.selectMode = !this.selectMode;
+                this.selectedPhotos.clear();
+                this.updateBulkActions();
+                this.renderPhotos();
+            }
+
+            togglePhotoSelection(photoId) {
+                if (this.selectedPhotos.has(photoId)) {
+                    this.selectedPhotos.delete(photoId);
+                } else {
+                    this.selectedPhotos.add(photoId);
+                }
+                this.updateBulkActions();
+            }
+
+            updateBulkActions() {
+                const bulkActions = document.getElementById('bulkActions');
+                const selectedCount = document.getElementById('selectedCount');
+                
+                selectedCount.textContent = this.selectedPhotos.size;
+                
+                if (this.selectedPhotos.size > 0) {
+                    bulkActions.classList.add('show');
+                } else {
+                    bulkActions.classList.remove('show');
+                }
+            }
+
+            filterPhotos() {
+                // Implementation for filtering photos
+                this.renderPhotos();
+            }
+
+            showToast(message, type = 'info') {
+                const toastContainer = document.getElementById('toastContainer');
+                const toastId = 'toast-' + Date.now();
+                
+                const toastHtml = `
+                    <div class="toast" id="${toastId}" role="alert">
+                        <div class="toast-header">
+                            <i class="fas fa-${type === 'success' ? 'check-circle text-success' : 
+                                type === 'error' ? 'exclamation-circle text-danger' : 
+                                'info-circle text-info'}"></i>
+                            <strong class="me-auto ms-2">Photos</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                        </div>
+                        <div class="toast-body">${message}</div>
+                    </div>
+                `;
+                
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                const toast = new bootstrap.Toast(document.getElementById(toastId));
+                toast.show();
+            }
+        }
+
+        // Global functions
+        function uploadPhotos() {
+            const modal = new bootstrap.Modal(document.getElementById('uploadModal'));
+            modal.show();
+        }
+
+        function startUpload() {
+            const files = document.getElementById('photoFiles').files;
+            if (files.length === 0) {
+                photosManager.showToast('Please select photos to upload', 'error');
+                return;
+            }
+
+            // Simulate upload process
+            photosManager.showToast('Uploading photos...', 'info');
+            
+            setTimeout(() => {
+                photosManager.showToast(`${files.length} photos uploaded successfully!`, 'success');
+                bootstrap.Modal.getInstance(document.getElementById('uploadModal')).hide();
+                photosManager.loadData();
+            }, 2000);
+        }
+
+        function addTag(event) {
+            if (event.key === 'Enter' && event.target.value.trim()) {
+                const tagInput = document.getElementById('tagInput');
+                const tag = event.target.value.trim();
+                
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag';
+                tagElement.innerHTML = `${tag} <span class="remove-tag" onclick="this.parentElement.remove()">×</span>`;
+                
+                tagInput.insertBefore(tagElement, event.target);
+                event.target.value = '';
+            }
+        }
+
+        function addPhotoTag(event) {
+            if (event.key === 'Enter' && event.target.value.trim()) {
+                const tagInput = document.getElementById('photoTagInput');
+                const tag = event.target.value.trim();
+                
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag';
+                tagElement.innerHTML = `${tag} <span class="remove-tag" onclick="this.parentElement.remove()">×</span>`;
+                
+                tagInput.insertBefore(tagElement, event.target);
+                event.target.value = '';
+            }
+        }
+
+        function viewPhotoDetails(id) {
+            const photo = photosManager.photos.find(p => p.id === id);
+            if (!photo) return;
+
+            // Populate modal with photo details
+            document.getElementById('photoDetailsTitle').textContent = photo.title;
+            document.getElementById('photoDetailsImage').src = photo.url;
+            document.getElementById('photoTitle').value = photo.title;
+            document.getElementById('photoDescription').value = photo.description;
+            document.getElementById('photoAlbum').value = photo.album;
+            document.getElementById('photoCategory').value = photo.category;
+            document.getElementById('photoAltText').value = photo.altText;
+            document.getElementById('photoFileSize').textContent = photo.fileSize + ' MB';
+            document.getElementById('photoDimensions').textContent = photo.dimensions;
+            document.getElementById('photoUploadDate').textContent = new Date(photo.uploadDate).toLocaleString();
+            document.getElementById('photoViews').textContent = photo.views;
+
+            // Add existing tags
+            const tagInput = document.getElementById('photoTagInput');
+            tagInput.innerHTML = '<input type="text" placeholder="Add tags..." onkeypress="addPhotoTag(event)">';
+            photo.tags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag';
+                tagElement.innerHTML = `${tag} <span class="remove-tag" onclick="this.parentElement.remove()">×</span>`;
+                tagInput.insertBefore(tagElement, tagInput.firstChild);
+            });
+
+            const modal = new bootstrap.Modal(document.getElementById('photoDetailsModal'));
+            modal.show();
+        }
+
+        function editPhoto(id) {
+            viewPhotoDetails(id);
+        }
+
+        function savePhotoDetails() {
+            photosManager.showToast('Photo details saved successfully!', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('photoDetailsModal')).hide();
+        }
+
+        function downloadPhoto(id) {
+            const photo = photosManager.photos.find(p => p.id === id);
+            if (photo) {
+                // Simulate download
+                photosManager.showToast(`Downloading ${photo.filename}...`, 'info');
+            }
+        }
+
+        function downloadCurrentPhoto() {
+            const photo = photosManager.photos[photosManager.currentLightboxIndex];
+            downloadPhoto(photo.id);
+        }
+
+        function deletePhoto(id) {
+            const photo = photosManager.photos.find(p => p.id === id);
+            if (!photo) return;
+
+            if (confirm(`Are you sure you want to delete "${photo.title}"? This action cannot be undone.`)) {
+                photosManager.showToast('Photo deleted successfully!', 'success');
+                photosManager.loadData();
+            }
+        }
+
+        function togglePhotoSelection(id) {
+            photosManager.togglePhotoSelection(id);
+        }
+
+        function bulkMoveToAlbum() {
+            if (photosManager.selectedPhotos.size === 0) return;
+            
+            const album = prompt('Enter album name:');
+            if (album) {
+                photosManager.showToast(`${photosManager.selectedPhotos.size} photos moved to ${album}`, 'success');
+                photosManager.selectedPhotos.clear();
+                photosManager.updateBulkActions();
+            }
+        }
+
+        function bulkAddTags() {
+            if (photosManager.selectedPhotos.size === 0) return;
+            
+            const tags = prompt('Enter tags (comma separated):');
+            if (tags) {
+                photosManager.showToast(`Tags added to ${photosManager.selectedPhotos.size} photos`, 'success');
+                photosManager.selectedPhotos.clear();
+                photosManager.updateBulkActions();
+            }
+        }
+
+        function bulkDownload() {
+            if (photosManager.selectedPhotos.size === 0) return;
+            
+            photosManager.showToast(`Downloading ${photosManager.selectedPhotos.size} photos...`, 'info');
+            photosManager.selectedPhotos.clear();
+            photosManager.updateBulkActions();
+        }
+
+        function bulkDelete() {
+            if (photosManager.selectedPhotos.size === 0) return;
+            
+            if (confirm(`Are you sure you want to delete ${photosManager.selectedPhotos.size} photos? This action cannot be undone.`)) {
+                photosManager.showToast(`${photosManager.selectedPhotos.size} photos deleted`, 'success');
+                photosManager.selectedPhotos.clear();
+                photosManager.updateBulkActions();
+                photosManager.loadData();
+            }
+        }
+
+        function createAlbum() {
+            const albumName = prompt('Enter album name:');
+            if (albumName) {
+                photosManager.showToast(`Album "${albumName}" created successfully!`, 'success');
+            }
+        }
+
+        function manageCategories() {
+            photosManager.showToast('Category management feature coming soon!', 'info');
+        }
+
+        function closeLightbox() {
+            photosManager.closeLightbox();
+        }
+
+        function previousPhoto(event) {
+            photosManager.previousPhoto(event);
+        }
+
+        function nextPhoto(event) {
+            photosManager.nextPhoto(event);
+        }
+
+        function openLightbox(index) {
+            photosManager.openLightbox(index);
+        }
+
+        function toggleView(view) {
+            photosManager.toggleView(view);
+        }
+
+        function toggleSelectMode() {
+            photosManager.toggleSelectMode();
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '../auth/login.html';
+            }
+        }
+
+        // Initialize the photos manager
+        let photosManager;
+        document.addEventListener('DOMContentLoaded', function() {
+            photosManager = new PhotosManager();
+        });
+    </script>
+</body>
+</html>
+

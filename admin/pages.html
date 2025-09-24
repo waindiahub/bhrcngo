@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pages - BHRC Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="../assets/css/common.css" rel="stylesheet">
+    <link href="../assets/css/admin.css" rel="stylesheet">
+    <style>
+        .page-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-left: 4px solid #007bff;
+        }
+        .page-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .page-card.published {
+            border-left-color: #28a745;
+        }
+        .page-card.draft {
+            border-left-color: #6c757d;
+        }
+        .page-card.archived {
+            border-left-color: #ffc107;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .page-preview {
+            max-height: 200px;
+            overflow: hidden;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            background: #f8f9fa;
+        }
+        .page-editor {
+            min-height: 400px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+        }
+        .page-hierarchy {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .hierarchy-item {
+            padding: 8px 12px;
+            margin: 2px 0;
+            background: white;
+            border-radius: 4px;
+            border-left: 3px solid #007bff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .hierarchy-item:hover {
+            background: #e3f2fd;
+        }
+        .hierarchy-item.active {
+            background: #007bff;
+            color: white;
+        }
+        .hierarchy-item .level-1 {
+            margin-left: 20px;
+        }
+        .hierarchy-item .level-2 {
+            margin-left: 40px;
+        }
+        .page-stats {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        .content-editor {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            min-height: 300px;
+            padding: 15px;
+        }
+        .seo-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .page-settings {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .template-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        .template-option {
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .template-option:hover {
+            border-color: #007bff;
+        }
+        .template-option.selected {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+        .page-actions {
+            position: sticky;
+            top: 20px;
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="fas fa-shield-alt"></i> BHRC Admin</h4>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-link">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="members.html" class="nav-link">
+                <i class="fas fa-users"></i> Members
+            </a>
+            <a href="associates.html" class="nav-link">
+                <i class="fas fa-handshake"></i> Associates
+            </a>
+            <a href="activities.html" class="nav-link">
+                <i class="fas fa-calendar-alt"></i> Activities
+            </a>
+            <a href="events.html" class="nav-link">
+                <i class="fas fa-calendar-check"></i> Events
+            </a>
+            <a href="pages.html" class="nav-link active">
+                <i class="fas fa-file-alt"></i> Pages
+            </a>
+            <a href="gallery.html" class="nav-link">
+                <i class="fas fa-images"></i> Gallery
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-left">
+                <button class="btn btn-link sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1>Pages</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-success me-2" onclick="createPage()">
+                    <i class="fas fa-plus"></i> Create Page
+                </button>
+                <button class="btn btn-outline-primary me-2" onclick="manageTemplates()">
+                    <i class="fas fa-layer-group"></i> Templates
+                </button>
+                <button class="btn btn-outline-info me-2" onclick="viewSiteMap()">
+                    <i class="fas fa-sitemap"></i> Site Map
+                </button>
+                <div class="dropdown">
+                    <button class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle"></i> Admin
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="content-wrapper">
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Total Pages</h6>
+                                    <h3 id="totalPages">0</h3>
+                                </div>
+                                <i class="fas fa-file-alt fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Published</h6>
+                                    <h3 id="publishedPages">0</h3>
+                                </div>
+                                <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Drafts</h6>
+                                    <h3 id="draftPages">0</h3>
+                                </div>
+                                <i class="fas fa-edit fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Page Views</h6>
+                                    <h3 id="totalViews">0</h3>
+                                </div>
+                                <i class="fas fa-eye fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <ul class="nav nav-tabs mb-4" id="pagesTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="all-pages-tab" data-bs-toggle="tab" data-bs-target="#all-pages" type="button" role="tab">
+                        <i class="fas fa-list"></i> All Pages
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="hierarchy-tab" data-bs-toggle="tab" data-bs-target="#hierarchy" type="button" role="tab">
+                        <i class="fas fa-sitemap"></i> Hierarchy
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="templates-tab" data-bs-toggle="tab" data-bs-target="#templates" type="button" role="tab">
+                        <i class="fas fa-layer-group"></i> Templates
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics" type="button" role="tab">
+                        <i class="fas fa-chart-bar"></i> Analytics
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="pagesTabContent">
+                <!-- All Pages Tab -->
+                <div class="tab-pane fade show active" id="all-pages" role="tabpanel">
+                    <!-- Filters -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                        <input type="text" class="form-control" id="pageSearch" placeholder="Search pages...">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <select class="form-select" id="statusFilter">
+                                        <option value="">All Status</option>
+                                        <option value="published">Published</option>
+                                        <option value="draft">Draft</option>
+                                        <option value="archived">Archived</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <select class="form-select" id="templateFilter">
+                                        <option value="">All Templates</option>
+                                        <option value="default">Default</option>
+                                        <option value="landing">Landing Page</option>
+                                        <option value="article">Article</option>
+                                        <option value="contact">Contact</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <select class="form-select" id="sortBy">
+                                        <option value="updated_desc">Recently Updated</option>
+                                        <option value="created_desc">Recently Created</option>
+                                        <option value="title_asc">Title A-Z</option>
+                                        <option value="views_desc">Most Viewed</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="btn-group w-100">
+                                        <button class="btn btn-outline-secondary" id="gridView" onclick="toggleView('grid')">
+                                            <i class="fas fa-th"></i>
+                                        </button>
+                                        <button class="btn btn-outline-secondary active" id="listView" onclick="toggleView('list')">
+                                            <i class="fas fa-list"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pages List -->
+                    <div id="pagesContainer">
+                        <!-- Pages will be loaded here -->
+                    </div>
+
+                    <!-- Pagination -->
+                    <nav aria-label="Pages pagination" class="mt-4">
+                        <ul class="pagination justify-content-center" id="pagesPagination">
+                            <!-- Pagination will be generated here -->
+                        </ul>
+                    </nav>
+                </div>
+
+                <!-- Hierarchy Tab -->
+                <div class="tab-pane fade" id="hierarchy" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-sitemap"></i> Site Structure</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="siteHierarchy">
+                                        <!-- Site hierarchy will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="page-actions">
+                                <h6>Page Actions</h6>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary" onclick="createPage()">
+                                        <i class="fas fa-plus"></i> Create New Page
+                                    </button>
+                                    <button class="btn btn-outline-secondary" onclick="createFolder()">
+                                        <i class="fas fa-folder-plus"></i> Create Folder
+                                    </button>
+                                    <button class="btn btn-outline-info" onclick="reorderPages()">
+                                        <i class="fas fa-sort"></i> Reorder Pages
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Templates Tab -->
+                <div class="tab-pane fade" id="templates" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5>Page Templates</h5>
+                        <button class="btn btn-primary" onclick="createTemplate()">
+                            <i class="fas fa-plus"></i> Create Template
+                        </button>
+                    </div>
+
+                    <div class="row" id="templatesContainer">
+                        <!-- Templates will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Analytics Tab -->
+                <div class="tab-pane fade" id="analytics" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <!-- Page Views Chart -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-chart-line"></i> Page Views Over Time</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="pageViewsChart" height="300"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Top Pages -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-trophy"></i> Most Viewed Pages</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="topPages">
+                                        <!-- Top pages will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <!-- Performance Metrics -->
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-tachometer-alt"></i> Performance</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-6 text-center">
+                                            <h4 class="text-success">2.3s</h4>
+                                            <small>Avg Load Time</small>
+                                        </div>
+                                        <div class="col-6 text-center">
+                                            <h4 class="text-info">95%</h4>
+                                            <small>SEO Score</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Recent Activity -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-clock"></i> Recent Activity</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="recentActivity">
+                                        <!-- Recent activity will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Page Modal -->
+    <div class="modal fade" id="pageModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pageModalTitle">Create Page</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="pageForm">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <!-- Basic Information -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6>Basic Information</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Page Title *</label>
+                                            <input type="text" class="form-control" id="pageTitle" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">URL Slug</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">https://bhrcindia.in/</span>
+                                                <input type="text" class="form-control" id="pageSlug">
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Page Description</label>
+                                            <textarea class="form-control" id="pageDescription" rows="3"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Content Editor -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6>Page Content</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="content-editor" id="contentEditor" contenteditable="true">
+                                            <p>Start typing your page content here...</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- SEO Settings -->
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6>SEO Settings</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Meta Title</label>
+                                            <input type="text" class="form-control" id="metaTitle">
+                                            <small class="form-text text-muted">Recommended: 50-60 characters</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Meta Description</label>
+                                            <textarea class="form-control" id="metaDescription" rows="3"></textarea>
+                                            <small class="form-text text-muted">Recommended: 150-160 characters</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Keywords</label>
+                                            <input type="text" class="form-control" id="metaKeywords" placeholder="Enter keywords separated by commas">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <!-- Page Settings -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6>Page Settings</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Status</label>
+                                            <select class="form-select" id="pageStatus">
+                                                <option value="draft">Draft</option>
+                                                <option value="published">Published</option>
+                                                <option value="archived">Archived</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Template</label>
+                                            <select class="form-select" id="pageTemplate">
+                                                <option value="default">Default</option>
+                                                <option value="landing">Landing Page</option>
+                                                <option value="article">Article</option>
+                                                <option value="contact">Contact</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Parent Page</label>
+                                            <select class="form-select" id="parentPage">
+                                                <option value="">None (Top Level)</option>
+                                                <option value="1">About Us</option>
+                                                <option value="2">Services</option>
+                                                <option value="3">Resources</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Order</label>
+                                            <input type="number" class="form-control" id="pageOrder" value="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Featured Image -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6>Featured Image</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <input type="file" class="form-control" id="featuredImage" accept="image/*">
+                                        </div>
+                                        <div id="imagePreview" class="text-center" style="display: none;">
+                                            <img id="previewImg" src="" alt="Preview" class="img-fluid rounded">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Visibility Settings -->
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6>Visibility</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" id="showInMenu" checked>
+                                            <label class="form-check-label" for="showInMenu">
+                                                Show in Navigation Menu
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" id="showInSitemap" checked>
+                                            <label class="form-check-label" for="showInSitemap">
+                                                Include in Sitemap
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="allowComments">
+                                            <label class="form-check-label" for="allowComments">
+                                                Allow Comments
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="previewPage()">
+                        <i class="fas fa-eye"></i> Preview
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="savePage()">
+                        <i class="fas fa-save"></i> Save Page
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page Details Modal -->
+    <div class="modal fade" id="pageDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pageDetailsTitle">Page Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="pageDetailsContent">
+                        <!-- Page details will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="editPageBtn">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button type="button" class="btn btn-success" id="viewPageBtn">
+                        <i class="fas fa-external-link-alt"></i> View Live
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        class PagesManager {
+            constructor() {
+                this.pages = [];
+                this.templates = [];
+                this.currentView = 'list';
+                this.currentPage = 1;
+                this.itemsPerPage = 10;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadData();
+                this.updateStats();
+                this.renderCharts();
+            }
+
+            setupEventListeners() {
+                // Search and filters
+                document.getElementById('pageSearch').addEventListener('input', () => this.filterPages());
+                document.getElementById('statusFilter').addEventListener('change', () => this.filterPages());
+                document.getElementById('templateFilter').addEventListener('change', () => this.filterPages());
+                document.getElementById('sortBy').addEventListener('change', () => this.filterPages());
+
+                // Page title to slug generation
+                document.getElementById('pageTitle').addEventListener('input', (e) => {
+                    const slug = this.generateSlug(e.target.value);
+                    document.getElementById('pageSlug').value = slug;
+                });
+
+                // Featured image preview
+                document.getElementById('featuredImage').addEventListener('change', (e) => {
+                    this.previewFeaturedImage(e.target.files[0]);
+                });
+
+                // Tab change events
+                document.querySelectorAll('#pagesTabs button').forEach(tab => {
+                    tab.addEventListener('shown.bs.tab', (e) => {
+                        const target = e.target.getAttribute('data-bs-target');
+                        if (target === '#hierarchy') {
+                            this.loadHierarchy();
+                        } else if (target === '#templates') {
+                            this.loadTemplates();
+                        } else if (target === '#analytics') {
+                            this.loadAnalytics();
+                        }
+                    });
+                });
+            }
+
+            async loadData() {
+                try {
+                    // Simulate API calls
+                    this.pages = this.getMockPages();
+                    this.templates = this.getMockTemplates();
+                    
+                    this.renderPages();
+                    this.updateStats();
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    this.showToast('Error loading data: ' + error.message, 'error');
+                }
+            }
+
+            getMockPages() {
+                return [
+                    {
+                        id: 1,
+                        title: 'About BHRC',
+                        slug: 'about-bhrc',
+                        description: 'Learn about the Bharatiya Human Rights Commission and our mission',
+                        status: 'published',
+                        template: 'default',
+                        parentId: null,
+                        order: 1,
+                        createdAt: '2024-01-10T10:00:00Z',
+                        updatedAt: '2024-01-20T14:30:00Z',
+                        views: 1250,
+                        author: 'Admin',
+                        metaTitle: 'About BHRC - Bharatiya Human Rights Commission',
+                        metaDescription: 'Learn about the Bharatiya Human Rights Commission, our mission, vision, and commitment to protecting human rights in Bharatiya.',
+                        showInMenu: true,
+                        showInSitemap: true,
+                        allowComments: false
+                    },
+                    {
+                        id: 2,
+                        title: 'Our Services',
+                        slug: 'services',
+                        description: 'Comprehensive legal aid and human rights services',
+                        status: 'published',
+                        template: 'default',
+                        parentId: null,
+                        order: 2,
+                        createdAt: '2024-01-12T09:15:00Z',
+                        updatedAt: '2024-01-22T11:45:00Z',
+                        views: 980,
+                        author: 'Admin',
+                        metaTitle: 'Our Services - BHRC Legal Aid',
+                        metaDescription: 'Discover our comprehensive legal aid services, human rights advocacy, and support programs.',
+                        showInMenu: true,
+                        showInSitemap: true,
+                        allowComments: false
+                    },
+                    {
+                        id: 3,
+                        title: 'Legal Aid Program',
+                        slug: 'legal-aid-program',
+                        description: 'Free legal assistance for those in need',
+                        status: 'published',
+                        template: 'article',
+                        parentId: 2,
+                        order: 1,
+                        createdAt: '2024-01-15T16:20:00Z',
+                        updatedAt: '2024-01-25T09:30:00Z',
+                        views: 750,
+                        author: 'Legal Team',
+                        metaTitle: 'Legal Aid Program - Free Legal Assistance',
+                        metaDescription: 'Access free legal aid services for human rights violations and legal support.',
+                        showInMenu: true,
+                        showInSitemap: true,
+                        allowComments: true
+                    },
+                    {
+                        id: 4,
+                        title: 'Contact Us',
+                        slug: 'contact',
+                        description: 'Get in touch with BHRC',
+                        status: 'published',
+                        template: 'contact',
+                        parentId: null,
+                        order: 10,
+                        createdAt: '2024-01-08T14:45:00Z',
+                        updatedAt: '2024-01-18T16:20:00Z',
+                        views: 2100,
+                        author: 'Admin',
+                        metaTitle: 'Contact BHRC - Get in Touch',
+                        metaDescription: 'Contact the Bharatiya Human Rights Commission for assistance, complaints, or inquiries.',
+                        showInMenu: true,
+                        showInSitemap: true,
+                        allowComments: false
+                    },
+                    {
+                        id: 5,
+                        title: 'Privacy Policy',
+                        slug: 'privacy-policy',
+                        description: 'Our privacy policy and data protection practices',
+                        status: 'draft',
+                        template: 'default',
+                        parentId: null,
+                        order: 20,
+                        createdAt: '2024-01-20T11:30:00Z',
+                        updatedAt: '2024-01-23T13:15:00Z',
+                        views: 0,
+                        author: 'Legal Team',
+                        metaTitle: 'Privacy Policy - BHRC',
+                        metaDescription: 'Read our privacy policy and understand how we protect your personal information.',
+                        showInMenu: false,
+                        showInSitemap: true,
+                        allowComments: false
+                    },
+                    {
+                        id: 6,
+                        title: 'Annual Report 2023',
+                        slug: 'annual-report-2023',
+                        description: 'Our comprehensive annual report for 2023',
+                        status: 'archived',
+                        template: 'article',
+                        parentId: null,
+                        order: 15,
+                        createdAt: '2023-12-31T23:59:00Z',
+                        updatedAt: '2024-01-05T10:00:00Z',
+                        views: 450,
+                        author: 'Admin',
+                        metaTitle: 'Annual Report 2023 - BHRC',
+                        metaDescription: 'Read our comprehensive annual report highlighting our achievements and impact in 2023.',
+                        showInMenu: false,
+                        showInSitemap: true,
+                        allowComments: false
+                    }
+                ];
+            }
+
+            getMockTemplates() {
+                return [
+                    {
+                        id: 1,
+                        name: 'Default',
+                        description: 'Standard page template with header, content, and footer',
+                        thumbnail: 'default-template.jpg',
+                        usageCount: 15,
+                        createdAt: '2023-12-01T10:00:00Z'
+                    },
+                    {
+                        id: 2,
+                        name: 'Landing Page',
+                        description: 'Hero section with call-to-action and features',
+                        thumbnail: 'landing-template.jpg',
+                        usageCount: 8,
+                        createdAt: '2023-12-05T14:30:00Z'
+                    },
+                    {
+                        id: 3,
+                        name: 'Article',
+                        description: 'Blog-style template with sidebar and comments',
+                        thumbnail: 'article-template.jpg',
+                        usageCount: 12,
+                        createdAt: '2023-12-10T09:15:00Z'
+                    },
+                    {
+                        id: 4,
+                        name: 'Contact',
+                        description: 'Contact form with map and office information',
+                        thumbnail: 'contact-template.jpg',
+                        usageCount: 3,
+                        createdAt: '2023-12-15T16:45:00Z'
+                    }
+                ];
+            }
+
+            renderPages() {
+                const container = document.getElementById('pagesContainer');
+                
+                if (this.pages.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No pages found</h5>
+                            <p class="text-muted">Create your first page</p>
+                            <button class="btn btn-primary" onclick="createPage()">
+                                <i class="fas fa-plus"></i> Create Page
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                if (this.currentView === 'list') {
+                    this.renderPagesList();
+                } else {
+                    this.renderPagesGrid();
+                }
+            }
+
+            renderPagesList() {
+                const container = document.getElementById('pagesContainer');
+                
+                const html = this.pages.map(page => {
+                    const statusClass = {
+                        'published': 'success',
+                        'draft': 'secondary',
+                        'archived': 'warning'
+                    }[page.status];
+
+                    return `
+                        <div class="card page-card ${page.status} mb-3">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-6">
+                                        <h6 class="card-title mb-1">${page.title}</h6>
+                                        <p class="text-muted mb-2">${page.description}</p>
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <span class="badge bg-${statusClass} status-badge">${page.status}</span>
+                                            <small class="text-muted">
+                                                <i class="fas fa-eye"></i> ${page.views} views
+                                            </small>
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar"></i> ${new Date(page.updatedAt).toLocaleDateString()}
+                                            </small>
+                                            <small class="text-muted">
+                                                <i class="fas fa-user"></i> ${page.author}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="row text-center">
+                                            <div class="col-4">
+                                                <div class="metric-small">
+                                                    <div class="metric-value">${page.template}</div>
+                                                    <div class="metric-label">Template</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="metric-small">
+                                                    <div class="metric-value">${page.showInMenu ? 'Yes' : 'No'}</div>
+                                                    <div class="metric-label">In Menu</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="metric-small">
+                                                    <div class="metric-value">${page.order}</div>
+                                                    <div class="metric-label">Order</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 text-end">
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" onclick="viewPage(${page.id})">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-outline-success" onclick="editPage(${page.id})">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="#" onclick="duplicatePage(${page.id})">
+                                                        <i class="fas fa-copy"></i> Duplicate
+                                                    </a></li>
+                                                    <li><a class="dropdown-item" href="#" onclick="viewPageLive(${page.id})">
+                                                        <i class="fas fa-external-link-alt"></i> View Live
+                                                    </a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item text-danger" href="#" onclick="deletePage(${page.id})">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                container.innerHTML = html;
+            }
+
+            renderPagesGrid() {
+                const container = document.getElementById('pagesContainer');
+                
+                const html = `
+                    <div class="row">
+                        ${this.pages.map(page => {
+                            const statusClass = {
+                                'published': 'success',
+                                'draft': 'secondary',
+                                'archived': 'warning'
+                            }[page.status];
+
+                            return `
+                                <div class="col-md-4 mb-4">
+                                    <div class="card page-card ${page.status} h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <span class="badge bg-${statusClass} status-badge">${page.status}</span>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item" href="#" onclick="viewPage(${page.id})">
+                                                            <i class="fas fa-eye"></i> View
+                                                        </a></li>
+                                                        <li><a class="dropdown-item" href="#" onclick="editPage(${page.id})">
+                                                            <i class="fas fa-edit"></i> Edit
+                                                        </a></li>
+                                                        <li><a class="dropdown-item" href="#" onclick="duplicatePage(${page.id})">
+                                                            <i class="fas fa-copy"></i> Duplicate
+                                                        </a></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <h6 class="card-title">${page.title}</h6>
+                                            <p class="card-text text-muted small">${page.description}</p>
+                                            <div class="mt-auto">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-eye"></i> ${page.views} views<br>
+                                                    <i class="fas fa-calendar"></i> ${new Date(page.updatedAt).toLocaleDateString()}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+
+                container.innerHTML = html;
+            }
+
+            loadHierarchy() {
+                const container = document.getElementById('siteHierarchy');
+                
+                // Build hierarchy tree
+                const rootPages = this.pages.filter(p => !p.parentId);
+                const childPages = this.pages.filter(p => p.parentId);
+                
+                const buildHierarchy = (pages, level = 0) => {
+                    return pages.map(page => {
+                        const children = childPages.filter(c => c.parentId === page.id);
+                        const hasChildren = children.length > 0;
+                        
+                        return `
+                            <div class="hierarchy-item" data-page-id="${page.id}" style="margin-left: ${level * 20}px;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-${hasChildren ? 'folder' : 'file-alt'} me-2"></i>
+                                        ${page.title}
+                                        <span class="badge bg-${page.status === 'published' ? 'success' : 'secondary'} ms-2">${page.status}</span>
+                                    </div>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary btn-sm" onclick="editPage(${page.id})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm" onclick="deletePage(${page.id})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                ${hasChildren ? buildHierarchy(children, level + 1) : ''}
+                            </div>
+                        `;
+                    }).join('');
+                };
+                
+                container.innerHTML = buildHierarchy(rootPages);
+            }
+
+            loadTemplates() {
+                const container = document.getElementById('templatesContainer');
+                
+                const html = this.templates.map(template => `
+                    <div class="col-md-3 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                                <h6 class="card-title">${template.name}</h6>
+                                <p class="card-text text-muted small">${template.description}</p>
+                                <div class="mt-auto">
+                                    <small class="text-muted">Used ${template.usageCount} times</small><br>
+                                    <div class="btn-group btn-group-sm mt-2">
+                                        <button class="btn btn-outline-primary" onclick="previewTemplate(${template.id})">
+                                            <i class="fas fa-eye"></i> Preview
+                                        </button>
+                                        <button class="btn btn-outline-success" onclick="useTemplate(${template.id})">
+                                            <i class="fas fa-plus"></i> Use
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = html;
+            }
+
+            updateStats() {
+                const totalPages = this.pages.length;
+                const publishedPages = this.pages.filter(p => p.status === 'published').length;
+                const draftPages = this.pages.filter(p => p.status === 'draft').length;
+                const totalViews = this.pages.reduce((sum, p) => sum + p.views, 0);
+
+                document.getElementById('totalPages').textContent = totalPages;
+                document.getElementById('publishedPages').textContent = publishedPages;
+                document.getElementById('draftPages').textContent = draftPages;
+                document.getElementById('totalViews').textContent = totalViews.toLocaleString();
+            }
+
+            renderCharts() {
+                this.renderPageViewsChart();
+                this.loadTopPages();
+                this.loadRecentActivity();
+            }
+
+            renderPageViewsChart() {
+                const ctx = document.getElementById('pageViewsChart').getContext('2d');
+                
+                // Mock data for page views over time
+                const viewsData = [
+                    { date: '2024-01-15', views: 450 },
+                    { date: '2024-01-16', views: 520 },
+                    { date: '2024-01-17', views: 380 },
+                    { date: '2024-01-18', views: 620 },
+                    { date: '2024-01-19', views: 580 },
+                    { date: '2024-01-20', views: 720 },
+                    { date: '2024-01-21', views: 650 }
+                ];
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: viewsData.map(d => new Date(d.date).toLocaleDateString()),
+                        datasets: [{
+                            label: 'Page Views',
+                            data: viewsData.map(d => d.views),
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            loadTopPages() {
+                const container = document.getElementById('topPages');
+                const topPages = [...this.pages]
+                    .sort((a, b) => b.views - a.views)
+                    .slice(0, 5);
+
+                const html = topPages.map((page, index) => `
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="badge bg-primary me-2">${index + 1}</span>
+                            <strong>${page.title}</strong><br>
+                            <small class="text-muted">${page.slug}</small>
+                        </div>
+                        <div class="text-end">
+                            <h6 class="mb-0">${page.views.toLocaleString()}</h6>
+                            <small class="text-muted">views</small>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = html;
+            }
+
+            loadRecentActivity() {
+                const container = document.getElementById('recentActivity');
+                const recentPages = [...this.pages]
+                    .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+                    .slice(0, 5);
+
+                const html = recentPages.map(page => `
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3">
+                            <i class="fas fa-${page.status === 'published' ? 'check-circle text-success' : 
+                                page.status === 'draft' ? 'edit text-warning' : 'archive text-info'}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold">${page.title}</div>
+                            <small class="text-muted">
+                                ${page.status === 'published' ? 'Published' : 
+                                  page.status === 'draft' ? 'Updated draft' : 'Archived'} 
+                                ${this.getTimeAgo(page.updatedAt)}
+                            </small>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = html;
+            }
+
+            generateSlug(title) {
+                return title
+                    .toLowerCase()
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+                    .trim('-');
+            }
+
+            previewFeaturedImage(file) {
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        document.getElementById('previewImg').src = e.target.result;
+                        document.getElementById('imagePreview').style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    document.getElementById('imagePreview').style.display = 'none';
+                }
+            }
+
+            getTimeAgo(dateString) {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffInDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+
+                if (diffInDays === 0) return 'today';
+                if (diffInDays === 1) return '1 day ago';
+                if (diffInDays < 7) return `${diffInDays} days ago`;
+                if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
+                return `${Math.floor(diffInDays / 30)} months ago`;
+            }
+
+            filterPages() {
+                // Implementation for filtering pages
+                this.renderPages();
+            }
+
+            toggleView(view) {
+                this.currentView = view;
+                document.getElementById('gridView').classList.toggle('active', view === 'grid');
+                document.getElementById('listView').classList.toggle('active', view === 'list');
+                this.renderPages();
+            }
+
+            showToast(message, type = 'info') {
+                const toastContainer = document.getElementById('toastContainer');
+                const toastId = 'toast-' + Date.now();
+                
+                const toastHtml = `
+                    <div class="toast" id="${toastId}" role="alert">
+                        <div class="toast-header">
+                            <i class="fas fa-${type === 'success' ? 'check-circle text-success' : 
+                                type === 'error' ? 'exclamation-circle text-danger' : 
+                                'info-circle text-info'}"></i>
+                            <strong class="me-auto ms-2">Pages</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                        </div>
+                        <div class="toast-body">${message}</div>
+                    </div>
+                `;
+                
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                const toast = new bootstrap.Toast(document.getElementById(toastId));
+                toast.show();
+            }
+        }
+
+        // Global functions
+        function createPage() {
+            document.getElementById('pageModalTitle').textContent = 'Create Page';
+            document.getElementById('pageForm').reset();
+            document.getElementById('imagePreview').style.display = 'none';
+            const modal = new bootstrap.Modal(document.getElementById('pageModal'));
+            modal.show();
+        }
+
+        function editPage(id) {
+            const page = pagesManager.pages.find(p => p.id === id);
+            if (!page) return;
+
+            document.getElementById('pageModalTitle').textContent = 'Edit Page';
+            document.getElementById('pageTitle').value = page.title;
+            document.getElementById('pageSlug').value = page.slug;
+            document.getElementById('pageDescription').value = page.description;
+            document.getElementById('pageStatus').value = page.status;
+            document.getElementById('pageTemplate').value = page.template;
+            document.getElementById('parentPage').value = page.parentId || '';
+            document.getElementById('pageOrder').value = page.order;
+            document.getElementById('metaTitle').value = page.metaTitle;
+            document.getElementById('metaDescription').value = page.metaDescription;
+            document.getElementById('showInMenu').checked = page.showInMenu;
+            document.getElementById('showInSitemap').checked = page.showInSitemap;
+            document.getElementById('allowComments').checked = page.allowComments;
+
+            const modal = new bootstrap.Modal(document.getElementById('pageModal'));
+            modal.show();
+        }
+
+        function savePage() {
+            const form = document.getElementById('pageForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const formData = {
+                title: document.getElementById('pageTitle').value,
+                slug: document.getElementById('pageSlug').value,
+                description: document.getElementById('pageDescription').value,
+                status: document.getElementById('pageStatus').value,
+                template: document.getElementById('pageTemplate').value,
+                parentId: document.getElementById('parentPage').value || null,
+                order: parseInt(document.getElementById('pageOrder').value),
+                metaTitle: document.getElementById('metaTitle').value,
+                metaDescription: document.getElementById('metaDescription').value,
+                showInMenu: document.getElementById('showInMenu').checked,
+                showInSitemap: document.getElementById('showInSitemap').checked,
+                allowComments: document.getElementById('allowComments').checked,
+                content: document.getElementById('contentEditor').innerHTML
+            };
+
+            // Simulate API call
+            setTimeout(() => {
+                pagesManager.showToast('Page saved successfully!', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('pageModal')).hide();
+                pagesManager.loadData();
+            }, 1000);
+        }
+
+        function previewPage() {
+            // Implementation for page preview
+            pagesManager.showToast('Preview feature coming soon!', 'info');
+        }
+
+        function viewPage(id) {
+            const page = pagesManager.pages.find(p => p.id === id);
+            if (!page) return;
+
+            const modal = new bootstrap.Modal(document.getElementById('pageDetailsModal'));
+            document.getElementById('pageDetailsTitle').textContent = page.title;
+            
+            const content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Page Information</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Title:</strong></td><td>${page.title}</td></tr>
+                            <tr><td><strong>Slug:</strong></td><td>${page.slug}</td></tr>
+                            <tr><td><strong>Status:</strong></td><td><span class="badge bg-primary">${page.status}</span></td></tr>
+                            <tr><td><strong>Template:</strong></td><td>${page.template}</td></tr>
+                            <tr><td><strong>Author:</strong></td><td>${page.author}</td></tr>
+                            <tr><td><strong>Created:</strong></td><td>${new Date(page.createdAt).toLocaleString()}</td></tr>
+                            <tr><td><strong>Updated:</strong></td><td>${new Date(page.updatedAt).toLocaleString()}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>SEO & Settings</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Meta Title:</strong></td><td>${page.metaTitle}</td></tr>
+                            <tr><td><strong>Views:</strong></td><td>${page.views}</td></tr>
+                            <tr><td><strong>In Menu:</strong></td><td>${page.showInMenu ? 'Yes' : 'No'}</td></tr>
+                            <tr><td><strong>In Sitemap:</strong></td><td>${page.showInSitemap ? 'Yes' : 'No'}</td></tr>
+                            <tr><td><strong>Comments:</strong></td><td>${page.allowComments ? 'Enabled' : 'Disabled'}</td></tr>
+                            <tr><td><strong>Order:</strong></td><td>${page.order}</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <h6>Description</h6>
+                    <p>${page.description}</p>
+                </div>
+            `;
+            
+            document.getElementById('pageDetailsContent').innerHTML = content;
+            
+            document.getElementById('editPageBtn').onclick = () => {
+                modal.hide();
+                editPage(id);
+            };
+            
+            document.getElementById('viewPageBtn').onclick = () => {
+                window.open(`/${page.slug}`, '_blank');
+            };
+            
+            modal.show();
+        }
+
+        function duplicatePage(id) {
+            const page = pagesManager.pages.find(p => p.id === id);
+            if (!page) return;
+
+            if (confirm(`Are you sure you want to duplicate "${page.title}"?`)) {
+                // Simulate API call
+                setTimeout(() => {
+                    pagesManager.showToast('Page duplicated successfully!', 'success');
+                    pagesManager.loadData();
+                }, 1000);
+            }
+        }
+
+        function deletePage(id) {
+            const page = pagesManager.pages.find(p => p.id === id);
+            if (!page) return;
+
+            if (confirm(`Are you sure you want to delete "${page.title}"? This action cannot be undone.`)) {
+                // Simulate API call
+                setTimeout(() => {
+                    pagesManager.showToast('Page deleted successfully!', 'success');
+                    pagesManager.loadData();
+                }, 1000);
+            }
+        }
+
+        function viewPageLive(id) {
+            const page = pagesManager.pages.find(p => p.id === id);
+            if (page) {
+                window.open(`/${page.slug}`, '_blank');
+            }
+        }
+
+        function manageTemplates() {
+            // Switch to templates tab
+            const templatesTab = document.getElementById('templates-tab');
+            templatesTab.click();
+        }
+
+        function viewSiteMap() {
+            // Switch to hierarchy tab
+            const hierarchyTab = document.getElementById('hierarchy-tab');
+            hierarchyTab.click();
+        }
+
+        function createTemplate() {
+            pagesManager.showToast('Template creation feature coming soon!', 'info');
+        }
+
+        function previewTemplate(id) {
+            pagesManager.showToast('Template preview feature coming soon!', 'info');
+        }
+
+        function useTemplate(id) {
+            const template = pagesManager.templates.find(t => t.id === id);
+            if (template) {
+                document.getElementById('pageTemplate').value = template.name.toLowerCase();
+                createPage();
+            }
+        }
+
+        function createFolder() {
+            const folderName = prompt('Enter folder name:');
+            if (folderName) {
+                pagesManager.showToast(`Folder "${folderName}" created successfully!`, 'success');
+            }
+        }
+
+        function reorderPages() {
+            pagesManager.showToast('Page reordering feature coming soon!', 'info');
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '../auth/login.html';
+            }
+        }
+
+        // Initialize the pages manager
+        let pagesManager;
+        document.addEventListener('DOMContentLoaded', function() {
+            pagesManager = new PagesManager();
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events - BHRC India</title>
+    <meta name="description" content="Discover and register for BHRC India events, workshops, and activities.">
+    
+    <!-- CSS Files -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/common.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #17a2b8;
+            --light-bg: #f8f9fa;
+            --border-color: #dee2e6;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .events-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .event-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .event-card:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .event-image {
+            height: 200px;
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .event-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .event-date-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .event-date-badge .day {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            line-height: 1;
+        }
+
+        .event-date-badge .month {
+            font-size: 0.875rem;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+        }
+
+        .event-status-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-upcoming {
+            background-color: rgba(52, 152, 219, 0.9);
+            color: white;
+        }
+
+        .status-ongoing {
+            background-color: rgba(39, 174, 96, 0.9);
+            color: white;
+        }
+
+        .status-completed {
+            background-color: rgba(108, 117, 125, 0.9);
+            color: white;
+        }
+
+        .status-cancelled {
+            background-color: rgba(231, 76, 60, 0.9);
+            color: white;
+        }
+
+        .event-content {
+            padding: 1.5rem;
+        }
+
+        .event-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .event-description {
+            color: #6c757d;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .event-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        .meta-item i {
+            margin-right: 0.5rem;
+            color: var(--secondary-color);
+            width: 16px;
+        }
+
+        .event-tags {
+            margin-bottom: 1rem;
+        }
+
+        .event-tag {
+            display: inline-block;
+            background: rgba(52, 152, 219, 0.1);
+            color: var(--secondary-color);
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .registration-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .seats-info {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        .seats-available {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+
+        .seats-limited {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+
+        .seats-full {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+
+        .filters-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 1rem;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid;
+        }
+
+        .stat-card.total { border-left-color: var(--primary-color); }
+        .stat-card.upcoming { border-left-color: var(--secondary-color); }
+        .stat-card.registered { border-left-color: var(--success-color); }
+        .stat-card.attended { border-left-color: var(--warning-color); }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .registration-form {
+            background: var(--light-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .event-calendar {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .calendar-day {
+            background: white;
+            padding: 0.75rem;
+            text-align: center;
+            min-height: 60px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .calendar-day:hover {
+            background: var(--light-bg);
+        }
+
+        .calendar-day.has-event {
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        .calendar-day.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: var(--secondary-color);
+            border-radius: 50%;
+        }
+
+        .calendar-day-header {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            padding: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .event-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .event-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .registration-info {
+                justify-content: center;
+            }
+            
+            .filter-row {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .calendar-grid {
+                font-size: 0.875rem;
+            }
+            
+            .calendar-day {
+                min-height: 40px;
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--primary-color);">
+        <div class="container">
+            <a class="navbar-brand" href="../../index.html">
+                <img src="../../images/logo-light.png" alt="BHRC Logo" height="40">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="profile.html">
+                            <i class="fas fa-user me-2"></i>Profile
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-2"></i>
+                            <span id="memberName">John Doe</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h1 class="mb-2">Events & Activities</h1>
+                    <p class="mb-0 opacity-75">Discover and participate in BHRC events, workshops, and activities</p>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-light btn-lg" onclick="showCalendarView()">
+                        <i class="fas fa-calendar me-2"></i>Calendar View
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card total">
+                <div class="stat-number" id="totalEvents">12</div>
+                <div class="stat-label">Total Events</div>
+            </div>
+            <div class="stat-card upcoming">
+                <div class="stat-number" id="upcomingEvents">5</div>
+                <div class="stat-label">Upcoming</div>
+            </div>
+            <div class="stat-card registered">
+                <div class="stat-number" id="registeredEvents">3</div>
+                <div class="stat-label">Registered</div>
+            </div>
+            <div class="stat-card attended">
+                <div class="stat-number" id="attendedEvents">7</div>
+                <div class="stat-label">Attended</div>
+            </div>
+        </div>
+
+        <!-- Calendar View -->
+        <div class="event-calendar" id="calendarView" style="display: none;">
+            <div class="calendar-header">
+                <h3 class="section-title mb-0">
+                    <i class="fas fa-calendar me-2"></i>Event Calendar
+                </h3>
+                <div class="calendar-nav">
+                    <button class="btn btn-outline-primary" onclick="previousMonth()">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="mx-3" id="currentMonth">January 2024</span>
+                    <button class="btn btn-outline-primary" onclick="nextMonth()">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <button class="btn btn-outline-secondary" onclick="hideCalendarView()">
+                    <i class="fas fa-list me-2"></i>List View
+                </button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid">
+                <!-- Calendar will be generated here -->
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section" id="filtersSection">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" id="categoryFilter" onchange="filterEvents()">
+                        <option value="">All Categories</option>
+                        <option value="workshop">Workshop</option>
+                        <option value="seminar">Seminar</option>
+                        <option value="training">Training</option>
+                        <option value="awareness">Awareness Campaign</option>
+                        <option value="legal-aid">Legal Aid</option>
+                        <option value="community">Community Outreach</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="statusFilter" onchange="filterEvents()">
+                        <option value="">All Status</option>
+                        <option value="upcoming">Upcoming</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">Location</label>
+                    <select class="form-select" id="locationFilter" onchange="filterEvents()">
+                        <option value="">All Locations</option>
+                        <option value="mumbai">Mumbai</option>
+                        <option value="delhi">Delhi</option>
+                        <option value="bangalore">Bangalore</option>
+                        <option value="online">Online</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">Date Range</label>
+                    <input type="date" class="form-control" id="dateFromFilter" onchange="filterEvents()">
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">&nbsp;</label>
+                    <input type="date" class="form-control" id="dateToFilter" onchange="filterEvents()">
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">&nbsp;</label>
+                    <button class="btn btn-outline-primary" onclick="clearFilters()">
+                        <i class="fas fa-times me-2"></i>Clear
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Events List -->
+        <div class="events-section" id="eventsSection">
+            <h3 class="section-title">
+                <i class="fas fa-calendar-alt me-2"></i>Upcoming Events
+            </h3>
+            <div id="eventsList">
+                <!-- Events will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Details Modal -->
+    <div class="modal fade" id="eventModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Event Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="eventModalBody">
+                    <!-- Event details will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Modal -->
+    <div class="modal fade" id="registrationModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Event Registration</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="registrationModalBody">
+                    <!-- Registration form will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        class EventsManager {
+            constructor() {
+                this.events = [];
+                this.filteredEvents = [];
+                this.currentDate = new Date();
+                this.calendarDate = new Date();
+                this.init();
+            }
+
+            async init() {
+                await this.loadEvents();
+                this.renderEvents();
+                this.updateStats();
+                this.generateCalendar();
+            }
+
+            async loadEvents() {
+                // Mock events data
+                this.events = [
+                    {
+                        id: 'EVT001',
+                        title: 'Human Rights Awareness Workshop',
+                        description: 'Comprehensive workshop on understanding fundamental human rights and legal protections available to citizens.',
+                        category: 'workshop',
+                        status: 'upcoming',
+                        date: new Date('2024-02-15'),
+                        time: '10:00 AM - 4:00 PM',
+                        location: 'Mumbai Community Center',
+                        city: 'mumbai',
+                        address: '123 Main Street, Mumbai, Maharashtra',
+                        organizer: 'BHRC Legal Team',
+                        capacity: 50,
+                        registered: 32,
+                        fee: 0,
+                        tags: ['awareness', 'legal-rights', 'workshop'],
+                        image: '../../images/events/workshop1.jpg',
+                        requirements: ['Valid ID', 'Notebook and pen'],
+                        agenda: [
+                            '10:00 AM - Registration and Welcome',
+                            '10:30 AM - Introduction to Human Rights',
+                            '12:00 PM - Legal Framework in India',
+                            '1:00 PM - Lunch Break',
+                            '2:00 PM - Case Studies and Examples',
+                            '3:30 PM - Q&A Session',
+                            '4:00 PM - Closing Remarks'
+                        ]
+                    },
+                    {
+                        id: 'EVT002',
+                        title: 'Legal Aid Clinic',
+                        description: 'Free legal consultation and assistance for human rights violations and civil liberties issues.',
+                        category: 'legal-aid',
+                        status: 'upcoming',
+                        date: new Date('2024-02-20'),
+                        time: '9:00 AM - 5:00 PM',
+                        location: 'BHRC Delhi Office',
+                        city: 'delhi',
+                        address: '456 Legal Complex, Delhi',
+                        organizer: 'Senior Advocates Panel',
+                        capacity: 30,
+                        registered: 15,
+                        fee: 0,
+                        tags: ['legal-aid', 'consultation', 'free'],
+                        image: '../../images/events/legal-aid1.jpg',
+                        requirements: ['Case documents', 'Valid ID'],
+                        agenda: [
+                            '9:00 AM - Registration',
+                            '9:30 AM - Initial Consultation',
+                            '12:00 PM - Document Review',
+                            '2:00 PM - Legal Advice Session',
+                            '4:00 PM - Follow-up Planning'
+                        ]
+                    },
+                    {
+                        id: 'EVT003',
+                        title: 'Women Rights Seminar',
+                        description: 'Empowering women through awareness of their rights and available legal protections.',
+                        category: 'seminar',
+                        status: 'upcoming',
+                        date: new Date('2024-02-25'),
+                        time: '2:00 PM - 6:00 PM',
+                        location: 'Online Webinar',
+                        city: 'online',
+                        address: 'Virtual Event',
+                        organizer: 'Women Rights Division',
+                        capacity: 200,
+                        registered: 145,
+                        fee: 0,
+                        tags: ['women-rights', 'empowerment', 'online'],
+                        image: '../../images/events/women-seminar1.jpg',
+                        requirements: ['Stable internet connection', 'Zoom application'],
+                        agenda: [
+                            '2:00 PM - Welcome and Introduction',
+                            '2:30 PM - Legal Rights of Women',
+                            '3:30 PM - Workplace Harassment Laws',
+                            '4:30 PM - Domestic Violence Protection',
+                            '5:30 PM - Q&A and Resources'
+                        ]
+                    },
+                    {
+                        id: 'EVT004',
+                        title: 'Community Outreach Program',
+                        description: 'Grassroots initiative to spread awareness about human rights in rural communities.',
+                        category: 'community',
+                        status: 'ongoing',
+                        date: new Date('2024-02-10'),
+                        time: '8:00 AM - 6:00 PM',
+                        location: 'Rural Villages, Karnataka',
+                        city: 'bangalore',
+                        address: 'Multiple villages in Karnataka',
+                        organizer: 'Field Team',
+                        capacity: 20,
+                        registered: 20,
+                        fee: 0,
+                        tags: ['outreach', 'rural', 'awareness'],
+                        image: '../../images/events/outreach1.jpg',
+                        requirements: ['Comfortable walking shoes', 'Water bottle'],
+                        agenda: [
+                            '8:00 AM - Team Assembly',
+                            '9:00 AM - Village Visit 1',
+                            '12:00 PM - Lunch with Community',
+                            '2:00 PM - Village Visit 2',
+                            '5:00 PM - Feedback Session'
+                        ]
+                    },
+                    {
+                        id: 'EVT005',
+                        title: 'Digital Rights Training',
+                        description: 'Understanding privacy rights and digital security in the modern age.',
+                        category: 'training',
+                        status: 'completed',
+                        date: new Date('2024-01-20'),
+                        time: '10:00 AM - 3:00 PM',
+                        location: 'Tech Hub, Bangalore',
+                        city: 'bangalore',
+                        address: '789 Tech Park, Bangalore',
+                        organizer: 'Digital Rights Team',
+                        capacity: 40,
+                        registered: 38,
+                        fee: 500,
+                        tags: ['digital-rights', 'privacy', 'technology'],
+                        image: '../../images/events/digital-training1.jpg',
+                        requirements: ['Laptop', 'Basic computer knowledge'],
+                        agenda: [
+                            '10:00 AM - Digital Privacy Basics',
+                            '11:30 AM - Data Protection Laws',
+                            '1:00 PM - Lunch Break',
+                            '2:00 PM - Practical Security Tools',
+                            '3:00 PM - Certification'
+                        ]
+                    }
+                ];
+
+                this.filteredEvents = [...this.events];
+            }
+
+            renderEvents() {
+                const container = document.getElementById('eventsList');
+                
+                if (this.filteredEvents.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No events found</h5>
+                            <p class="text-muted">Check back later for upcoming events</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = this.filteredEvents.map(event => `
+                    <div class="event-card">
+                        <div class="event-image">
+                            <img src="${event.image}" alt="${event.title}" onerror="this.style.display='none'">
+                            <div class="event-date-badge">
+                                <div class="day">${event.date.getDate()}</div>
+                                <div class="month">${event.date.toLocaleDateString('en-US', { month: 'short' })}</div>
+                            </div>
+                            <div class="event-status-badge status-${event.status}">
+                                ${this.formatStatus(event.status)}
+                            </div>
+                        </div>
+                        
+                        <div class="event-content">
+                            <h4 class="event-title">${event.title}</h4>
+                            <p class="event-description">${event.description}</p>
+                            
+                            <div class="event-meta">
+                                <div class="meta-item">
+                                    <i class="fas fa-calendar"></i>
+                                    ${this.formatDate(event.date)}
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-clock"></i>
+                                    ${event.time}
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    ${event.location}
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-tag"></i>
+                                    ${this.formatCategory(event.category)}
+                                </div>
+                                ${event.fee > 0 ? `
+                                    <div class="meta-item">
+                                        <i class="fas fa-rupee-sign"></i>
+                                        ₹${event.fee}
+                                    </div>
+                                ` : `
+                                    <div class="meta-item">
+                                        <i class="fas fa-gift"></i>
+                                        Free
+                                    </div>
+                                `}
+                            </div>
+                            
+                            <div class="event-tags">
+                                ${event.tags.map(tag => `<span class="event-tag">${tag}</span>`).join('')}
+                            </div>
+                            
+                            <div class="event-actions">
+                                <div>
+                                    <button class="btn btn-primary" onclick="viewEvent('${event.id}')">
+                                        <i class="fas fa-eye me-2"></i>View Details
+                                    </button>
+                                    ${this.canRegister(event) ? `
+                                        <button class="btn btn-success" onclick="registerForEvent('${event.id}')">
+                                            <i class="fas fa-user-plus me-2"></i>Register
+                                        </button>
+                                    ` : ''}
+                                    ${this.isRegistered(event.id) ? `
+                                        <button class="btn btn-outline-info" disabled>
+                                            <i class="fas fa-check me-2"></i>Registered
+                                        </button>
+                                    ` : ''}
+                                </div>
+                                
+                                <div class="registration-info">
+                                    <div class="seats-info">
+                                        <span class="${this.getSeatClass(event)}">
+                                            ${event.registered}/${event.capacity} registered
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            updateStats() {
+                const stats = {
+                    total: this.events.length,
+                    upcoming: this.events.filter(e => e.status === 'upcoming').length,
+                    registered: this.events.filter(e => this.isRegistered(e.id)).length,
+                    attended: this.events.filter(e => e.status === 'completed' && this.isRegistered(e.id)).length
+                };
+
+                document.getElementById('totalEvents').textContent = stats.total;
+                document.getElementById('upcomingEvents').textContent = stats.upcoming;
+                document.getElementById('registeredEvents').textContent = stats.registered;
+                document.getElementById('attendedEvents').textContent = stats.attended;
+            }
+
+            generateCalendar() {
+                const year = this.calendarDate.getFullYear();
+                const month = this.calendarDate.getMonth();
+                
+                document.getElementById('currentMonth').textContent = 
+                    this.calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                const startDate = new Date(firstDay);
+                startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+                const calendarGrid = document.getElementById('calendarGrid');
+                let calendarHTML = '';
+
+                // Day headers
+                const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                dayHeaders.forEach(day => {
+                    calendarHTML += `<div class="calendar-day-header">${day}</div>`;
+                });
+
+                // Calendar days
+                const currentDate = new Date(startDate);
+                for (let i = 0; i < 42; i++) {
+                    const hasEvent = this.events.some(event => 
+                        event.date.toDateString() === currentDate.toDateString()
+                    );
+                    
+                    const isCurrentMonth = currentDate.getMonth() === month;
+                    const dayClass = `calendar-day ${hasEvent ? 'has-event' : ''} ${!isCurrentMonth ? 'text-muted' : ''}`;
+                    
+                    calendarHTML += `
+                        <div class="${dayClass}" onclick="showDayEvents('${currentDate.toISOString()}')">
+                            ${currentDate.getDate()}
+                        </div>
+                    `;
+                    
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+
+                calendarGrid.innerHTML = calendarHTML;
+            }
+
+            filterEvents() {
+                const categoryFilter = document.getElementById('categoryFilter').value;
+                const statusFilter = document.getElementById('statusFilter').value;
+                const locationFilter = document.getElementById('locationFilter').value;
+                const dateFromFilter = document.getElementById('dateFromFilter').value;
+                const dateToFilter = document.getElementById('dateToFilter').value;
+
+                this.filteredEvents = this.events.filter(event => {
+                    if (categoryFilter && event.category !== categoryFilter) return false;
+                    if (statusFilter && event.status !== statusFilter) return false;
+                    if (locationFilter && event.city !== locationFilter) return false;
+                    if (dateFromFilter && event.date < new Date(dateFromFilter)) return false;
+                    if (dateToFilter && event.date > new Date(dateToFilter)) return false;
+                    return true;
+                });
+
+                this.renderEvents();
+            }
+
+            clearFilters() {
+                document.getElementById('categoryFilter').value = '';
+                document.getElementById('statusFilter').value = '';
+                document.getElementById('locationFilter').value = '';
+                document.getElementById('dateFromFilter').value = '';
+                document.getElementById('dateToFilter').value = '';
+                this.filteredEvents = [...this.events];
+                this.renderEvents();
+            }
+
+            viewEvent(id) {
+                const event = this.events.find(e => e.id === id);
+                if (!event) return;
+
+                const modalBody = document.getElementById('eventModalBody');
+                modalBody.innerHTML = `
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h4>${event.title}</h4>
+                            <p class="text-muted">${this.formatCategory(event.category)} • ${event.organizer}</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="status-badge status-${event.status}">${this.formatStatus(event.status)}</span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-calendar me-2"></i>Date & Time</h6>
+                            <p>${this.formatDate(event.date)}<br>${event.time}</p>
+                            
+                            <h6><i class="fas fa-map-marker-alt me-2"></i>Location</h6>
+                            <p>${event.location}<br>${event.address}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-users me-2"></i>Registration</h6>
+                            <p>${event.registered}/${event.capacity} registered</p>
+                            
+                            <h6><i class="fas fa-rupee-sign me-2"></i>Fee</h6>
+                            <p>${event.fee > 0 ? '₹' + event.fee : 'Free'}</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6>Description</h6>
+                        <p>${event.description}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6>Requirements</h6>
+                        <ul>
+                            ${event.requirements.map(req => `<li>${req}</li>`).join('')}
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6>Agenda</h6>
+                        <ul>
+                            ${event.agenda.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        ${this.canRegister(event) ? `
+                            <button class="btn btn-success" onclick="registerForEvent('${event.id}')">
+                                <i class="fas fa-user-plus me-2"></i>Register Now
+                            </button>
+                        ` : ''}
+                        ${this.isRegistered(event.id) ? `
+                            <button class="btn btn-outline-info" disabled>
+                                <i class="fas fa-check me-2"></i>Already Registered
+                            </button>
+                        ` : ''}
+                        <button class="btn btn-outline-primary" onclick="shareEvent('${event.id}')">
+                            <i class="fas fa-share me-2"></i>Share
+                        </button>
+                    </div>
+                `;
+
+                const modal = new bootstrap.Modal(document.getElementById('eventModal'));
+                modal.show();
+            }
+
+            registerForEvent(id) {
+                const event = this.events.find(e => e.id === id);
+                if (!event || !this.canRegister(event)) return;
+
+                const modalBody = document.getElementById('registrationModalBody');
+                modalBody.innerHTML = `
+                    <div class="mb-3">
+                        <h5>${event.title}</h5>
+                        <p class="text-muted">${this.formatDate(event.date)} • ${event.time}</p>
+                    </div>
+
+                    <div class="registration-form">
+                        <form id="eventRegistrationForm">
+                            <div class="form-group">
+                                <label class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="regName" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Email Address *</label>
+                                <input type="email" class="form-control" id="regEmail" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Phone Number *</label>
+                                <input type="tel" class="form-control" id="regPhone" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Organization (Optional)</label>
+                                <input type="text" class="form-control" id="regOrganization">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Dietary Restrictions</label>
+                                <select class="form-select" id="regDiet">
+                                    <option value="">None</option>
+                                    <option value="vegetarian">Vegetarian</option>
+                                    <option value="vegan">Vegan</option>
+                                    <option value="other">Other (specify in comments)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Comments/Questions</label>
+                                <textarea class="form-control" id="regComments" rows="3"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="regTerms" required>
+                                    <label class="form-check-label" for="regTerms">
+                                        I agree to the terms and conditions and privacy policy
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-user-plus me-2"></i>Register
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                `;
+
+                // Setup form submission
+                document.getElementById('eventRegistrationForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.submitRegistration(id);
+                });
+
+                const modal = new bootstrap.Modal(document.getElementById('registrationModal'));
+                modal.show();
+            }
+
+            async submitRegistration(eventId) {
+                const formData = {
+                    name: document.getElementById('regName').value,
+                    email: document.getElementById('regEmail').value,
+                    phone: document.getElementById('regPhone').value,
+                    organization: document.getElementById('regOrganization').value,
+                    diet: document.getElementById('regDiet').value,
+                    comments: document.getElementById('regComments').value
+                };
+
+                try {
+                    // Show loading state
+                    const submitBtn = document.querySelector('#eventRegistrationForm button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Registering...';
+                    submitBtn.disabled = true;
+
+                    // Simulate API call
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+
+                    // Update event registration count
+                    const event = this.events.find(e => e.id === eventId);
+                    if (event) {
+                        event.registered++;
+                    }
+
+                    // Store registration in localStorage (mock)
+                    const registrations = JSON.parse(localStorage.getItem('eventRegistrations') || '[]');
+                    registrations.push(eventId);
+                    localStorage.setItem('eventRegistrations', JSON.stringify(registrations));
+
+                    // Close modal and update UI
+                    bootstrap.Modal.getInstance(document.getElementById('registrationModal')).hide();
+                    this.renderEvents();
+                    this.updateStats();
+
+                    alert('Registration successful! You will receive a confirmation email shortly.');
+
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    alert('Registration failed. Please try again.');
+                }
+            }
+
+            showCalendarView() {
+                document.getElementById('calendarView').style.display = 'block';
+                document.getElementById('filtersSection').style.display = 'none';
+                document.getElementById('eventsSection').style.display = 'none';
+            }
+
+            hideCalendarView() {
+                document.getElementById('calendarView').style.display = 'none';
+                document.getElementById('filtersSection').style.display = 'block';
+                document.getElementById('eventsSection').style.display = 'block';
+            }
+
+            previousMonth() {
+                this.calendarDate.setMonth(this.calendarDate.getMonth() - 1);
+                this.generateCalendar();
+            }
+
+            nextMonth() {
+                this.calendarDate.setMonth(this.calendarDate.getMonth() + 1);
+                this.generateCalendar();
+            }
+
+            showDayEvents(dateString) {
+                const date = new Date(dateString);
+                const dayEvents = this.events.filter(event => 
+                    event.date.toDateString() === date.toDateString()
+                );
+
+                if (dayEvents.length > 0) {
+                    alert(`Events on ${date.toDateString()}:\n${dayEvents.map(e => e.title).join('\n')}`);
+                }
+            }
+
+            // Utility functions
+            canRegister(event) {
+                return event.status === 'upcoming' && 
+                       event.registered < event.capacity && 
+                       !this.isRegistered(event.id);
+            }
+
+            isRegistered(eventId) {
+                const registrations = JSON.parse(localStorage.getItem('eventRegistrations') || '[]');
+                return registrations.includes(eventId);
+            }
+
+            getSeatClass(event) {
+                const percentage = (event.registered / event.capacity) * 100;
+                if (percentage >= 90) return 'seats-full';
+                if (percentage >= 70) return 'seats-limited';
+                return 'seats-available';
+            }
+
+            formatDate(date) {
+                return date.toLocaleDateString('en-IN', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+
+            formatStatus(status) {
+                const statusMap = {
+                    'upcoming': 'Upcoming',
+                    'ongoing': 'Ongoing',
+                    'completed': 'Completed',
+                    'cancelled': 'Cancelled'
+                };
+                return statusMap[status] || status;
+            }
+
+            formatCategory(category) {
+                const categoryMap = {
+                    'workshop': 'Workshop',
+                    'seminar': 'Seminar',
+                    'training': 'Training',
+                    'awareness': 'Awareness Campaign',
+                    'legal-aid': 'Legal Aid',
+                    'community': 'Community Outreach'
+                };
+                return categoryMap[category] || category;
+            }
+        }
+
+        // Global functions
+        function showCalendarView() {
+            eventsManager.showCalendarView();
+        }
+
+        function hideCalendarView() {
+            eventsManager.hideCalendarView();
+        }
+
+        function previousMonth() {
+            eventsManager.previousMonth();
+        }
+
+        function nextMonth() {
+            eventsManager.nextMonth();
+        }
+
+        function showDayEvents(dateString) {
+            eventsManager.showDayEvents(dateString);
+        }
+
+        function filterEvents() {
+            eventsManager.filterEvents();
+        }
+
+        function clearFilters() {
+            eventsManager.clearFilters();
+        }
+
+        function viewEvent(id) {
+            eventsManager.viewEvent(id);
+        }
+
+        function registerForEvent(id) {
+            eventsManager.registerForEvent(id);
+        }
+
+        function shareEvent(id) {
+            const event = eventsManager.events.find(e => e.id === id);
+            if (event && navigator.share) {
+                navigator.share({
+                    title: event.title,
+                    text: event.description,
+                    url: window.location.href
+                });
+            } else {
+                alert('Share functionality will be implemented');
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('token');
+                window.location.href = '../login.html';
+            }
+        }
+
+        // Initialize events manager when page loads
+        let eventsManager;
+        document.addEventListener('DOMContentLoaded', function() {
+            eventsManager = new EventsManager();
+        });
+    </script>
+</body>
+</html>

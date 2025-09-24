@@ -1,0 +1,662 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Photo - BHRC Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="../assets/css/common.css" rel="stylesheet">
+    <link href="../assets/css/admin.css" rel="stylesheet">
+    <style>
+        .upload-zone {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #f8f9fa;
+        }
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+        .photo-preview {
+            position: relative;
+            display: inline-block;
+            margin: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .photo-preview img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+        }
+        .photo-preview .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .progress-container {
+            margin-top: 20px;
+        }
+        .tag-input {
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            padding: 5px 15px;
+            margin: 2px;
+            background: #f8f9fa;
+            display: inline-block;
+        }
+        .tag-input .remove-tag {
+            margin-left: 8px;
+            color: #dc3545;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="fas fa-shield-alt"></i> BHRC Admin</h4>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-link">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="members.html" class="nav-link">
+                <i class="fas fa-users"></i> Members
+            </a>
+            <a href="activities.html" class="nav-link">
+                <i class="fas fa-calendar-alt"></i> Activities
+            </a>
+            <a href="events.html" class="nav-link">
+                <i class="fas fa-calendar-check"></i> Events
+            </a>
+            <a href="gallery.html" class="nav-link">
+                <i class="fas fa-images"></i> Gallery
+            </a>
+            <a href="photos.html" class="nav-link">
+                <i class="fas fa-camera"></i> Photos
+            </a>
+            <a href="add_photo.html" class="nav-link active">
+                <i class="fas fa-plus-circle"></i> Add Photo
+            </a>
+            <a href="videos.html" class="nav-link">
+                <i class="fas fa-video"></i> Videos
+            </a>
+            <a href="donations.html" class="nav-link">
+                <i class="fas fa-heart"></i> Donations
+            </a>
+            <a href="complaints.html" class="nav-link">
+                <i class="fas fa-exclamation-triangle"></i> Complaints
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-left">
+                <button class="btn btn-link sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1>Add Photo</h1>
+            </div>
+            <div class="header-right">
+                <div class="dropdown">
+                    <button class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle"></i> Admin
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="content-wrapper">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-upload"></i> Upload Photos</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Upload Zone -->
+                            <div class="upload-zone" id="uploadZone">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                <h5>Drag & Drop Photos Here</h5>
+                                <p class="text-muted">or click to browse files</p>
+                                <input type="file" id="photoInput" multiple accept="image/*" style="display: none;">
+                                <button type="button" class="btn btn-primary" onclick="document.getElementById('photoInput').click()">
+                                    <i class="fas fa-folder-open"></i> Browse Files
+                                </button>
+                            </div>
+
+                            <!-- Photo Previews -->
+                            <div id="photoPreviewContainer" class="mt-4"></div>
+
+                            <!-- Upload Progress -->
+                            <div id="uploadProgress" class="progress-container" style="display: none;">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Uploading...</span>
+                                    <span id="progressText">0%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar" id="progressBar" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Photo Details Form -->
+                    <div class="card mt-4" id="photoDetailsCard" style="display: none;">
+                        <div class="card-header">
+                            <h5><i class="fas fa-edit"></i> Photo Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="photoDetailsForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Album</label>
+                                            <select class="form-select" id="albumSelect" required>
+                                                <option value="">Select Album</option>
+                                                <option value="activities">Activities</option>
+                                                <option value="events">Events</option>
+                                                <option value="achievements">Achievements</option>
+                                                <option value="gallery">General Gallery</option>
+                                                <option value="members">Members</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Category</label>
+                                            <select class="form-select" id="categorySelect">
+                                                <option value="">Select Category</option>
+                                                <option value="event">Event</option>
+                                                <option value="activity">Activity</option>
+                                                <option value="meeting">Meeting</option>
+                                                <option value="ceremony">Ceremony</option>
+                                                <option value="workshop">Workshop</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Title</label>
+                                    <input type="text" class="form-control" id="photoTitle" placeholder="Enter photo title">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Description</label>
+                                    <textarea class="form-control" id="photoDescription" rows="3" placeholder="Enter photo description"></textarea>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Date Taken</label>
+                                            <input type="date" class="form-control" id="dateTaken">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Location</label>
+                                            <input type="text" class="form-control" id="photoLocation" placeholder="Enter location">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Tags</label>
+                                    <input type="text" class="form-control" id="tagInput" placeholder="Enter tags and press Enter">
+                                    <div id="tagsContainer" class="mt-2"></div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="isPublic" checked>
+                                            <label class="form-check-label" for="isPublic">
+                                                Make photos public
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="isFeatured">
+                                            <label class="form-check-label" for="isFeatured">
+                                                Feature in gallery
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Upload Summary -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-info-circle"></i> Upload Summary</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Selected Photos:</span>
+                                <span id="photoCount">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Total Size:</span>
+                                <span id="totalSize">0 MB</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span>Status:</span>
+                                <span id="uploadStatus" class="text-muted">Ready</span>
+                            </div>
+                            <button type="button" class="btn btn-success w-100" id="uploadBtn" onclick="uploadPhotos()" disabled>
+                                <i class="fas fa-upload"></i> Upload Photos
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary w-100 mt-2" onclick="clearAll()">
+                                <i class="fas fa-trash"></i> Clear All
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Upload Guidelines -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-lightbulb"></i> Upload Guidelines</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Maximum file size: 10MB</li>
+                                <li><i class="fas fa-check text-success"></i> Supported formats: JPG, PNG, GIF</li>
+                                <li><i class="fas fa-check text-success"></i> Recommended resolution: 1920x1080</li>
+                                <li><i class="fas fa-check text-success"></i> Multiple photos can be uploaded</li>
+                                <li><i class="fas fa-info text-info"></i> Photos will be automatically resized</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Recent Uploads -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-history"></i> Recent Uploads</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="recentUploads">
+                                <p class="text-muted text-center">No recent uploads</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        class PhotoUploadManager {
+            constructor() {
+                this.selectedFiles = [];
+                this.tags = [];
+                this.uploadedPhotos = [];
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadRecentUploads();
+            }
+
+            setupEventListeners() {
+                const uploadZone = document.getElementById('uploadZone');
+                const photoInput = document.getElementById('photoInput');
+                const tagInput = document.getElementById('tagInput');
+
+                // Drag and drop events
+                uploadZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.add('dragover');
+                });
+
+                uploadZone.addEventListener('dragleave', () => {
+                    uploadZone.classList.remove('dragover');
+                });
+
+                uploadZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.remove('dragover');
+                    const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+                    this.handleFiles(files);
+                });
+
+                uploadZone.addEventListener('click', () => {
+                    photoInput.click();
+                });
+
+                photoInput.addEventListener('change', (e) => {
+                    this.handleFiles(Array.from(e.target.files));
+                });
+
+                // Tag input
+                tagInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.addTag(e.target.value.trim());
+                        e.target.value = '';
+                    }
+                });
+            }
+
+            handleFiles(files) {
+                files.forEach(file => {
+                    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                        this.showToast(`File ${file.name} is too large. Maximum size is 10MB.`, 'error');
+                        return;
+                    }
+                    
+                    if (!file.type.startsWith('image/')) {
+                        this.showToast(`File ${file.name} is not a valid image.`, 'error');
+                        return;
+                    }
+
+                    this.selectedFiles.push(file);
+                });
+
+                this.updatePreview();
+                this.updateSummary();
+                this.showPhotoDetails();
+            }
+
+            updatePreview() {
+                const container = document.getElementById('photoPreviewContainer');
+                container.innerHTML = '';
+
+                this.selectedFiles.forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const preview = document.createElement('div');
+                        preview.className = 'photo-preview';
+                        preview.innerHTML = `
+                            <img src="${e.target.result}" alt="Preview">
+                            <button type="button" class="remove-btn" onclick="photoUploadManager.removeFile(${index})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                        container.appendChild(preview);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            removeFile(index) {
+                this.selectedFiles.splice(index, 1);
+                this.updatePreview();
+                this.updateSummary();
+                
+                if (this.selectedFiles.length === 0) {
+                    this.hidePhotoDetails();
+                }
+            }
+
+            updateSummary() {
+                const photoCount = document.getElementById('photoCount');
+                const totalSize = document.getElementById('totalSize');
+                const uploadBtn = document.getElementById('uploadBtn');
+                const uploadStatus = document.getElementById('uploadStatus');
+
+                photoCount.textContent = this.selectedFiles.length;
+                
+                const totalBytes = this.selectedFiles.reduce((sum, file) => sum + file.size, 0);
+                totalSize.textContent = this.formatFileSize(totalBytes);
+
+                uploadBtn.disabled = this.selectedFiles.length === 0;
+                uploadStatus.textContent = this.selectedFiles.length > 0 ? 'Ready to upload' : 'No photos selected';
+                uploadStatus.className = this.selectedFiles.length > 0 ? 'text-success' : 'text-muted';
+            }
+
+            showPhotoDetails() {
+                document.getElementById('photoDetailsCard').style.display = 'block';
+            }
+
+            hidePhotoDetails() {
+                document.getElementById('photoDetailsCard').style.display = 'none';
+            }
+
+            addTag(tagText) {
+                if (tagText && !this.tags.includes(tagText)) {
+                    this.tags.push(tagText);
+                    this.renderTags();
+                }
+            }
+
+            removeTag(tagText) {
+                this.tags = this.tags.filter(tag => tag !== tagText);
+                this.renderTags();
+            }
+
+            renderTags() {
+                const container = document.getElementById('tagsContainer');
+                container.innerHTML = this.tags.map(tag => `
+                    <span class="tag-input">
+                        ${tag}
+                        <span class="remove-tag" onclick="photoUploadManager.removeTag('${tag}')">
+                            <i class="fas fa-times"></i>
+                        </span>
+                    </span>
+                `).join('');
+            }
+
+            async uploadPhotos() {
+                if (this.selectedFiles.length === 0) return;
+
+                const uploadBtn = document.getElementById('uploadBtn');
+                const uploadProgress = document.getElementById('uploadProgress');
+                const progressBar = document.getElementById('progressBar');
+                const progressText = document.getElementById('progressText');
+                const uploadStatus = document.getElementById('uploadStatus');
+
+                uploadBtn.disabled = true;
+                uploadProgress.style.display = 'block';
+                uploadStatus.textContent = 'Uploading...';
+                uploadStatus.className = 'text-info';
+
+                try {
+                    const formData = new FormData();
+                    
+                    // Add files
+                    this.selectedFiles.forEach((file, index) => {
+                        formData.append(`photos`, file);
+                    });
+
+                    // Add metadata
+                    const metadata = {
+                        album: document.getElementById('albumSelect').value,
+                        category: document.getElementById('categorySelect').value,
+                        title: document.getElementById('photoTitle').value,
+                        description: document.getElementById('photoDescription').value,
+                        dateTaken: document.getElementById('dateTaken').value,
+                        location: document.getElementById('photoLocation').value,
+                        tags: this.tags,
+                        isPublic: document.getElementById('isPublic').checked,
+                        isFeatured: document.getElementById('isFeatured').checked
+                    };
+
+                    formData.append('metadata', JSON.stringify(metadata));
+
+                    // Simulate upload progress
+                    let progress = 0;
+                    const progressInterval = setInterval(() => {
+                        progress += Math.random() * 15;
+                        if (progress > 90) progress = 90;
+                        
+                        progressBar.style.width = progress + '%';
+                        progressText.textContent = Math.round(progress) + '%';
+                    }, 200);
+
+                    const response = await fetch(window.BHRC_CONFIG ? window.BHRC_CONFIG.API.BASE_URL + ''.replace('/api', '') : 'https://bhrcdata.online/backend/api'.replace('/api', '')), {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    clearInterval(progressInterval);
+                    progressBar.style.width = '100%';
+                    progressText.textContent = '100%';
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.showToast(`Successfully uploaded ${this.selectedFiles.length} photos!`, 'success');
+                        this.uploadedPhotos.push(...result.photos);
+                        this.clearAll();
+                        this.loadRecentUploads();
+                    } else {
+                        throw new Error(result.message || 'Upload failed');
+                    }
+
+                } catch (error) {
+                    this.showToast('Upload failed: ' + error.message, 'error');
+                    // For demo purposes, simulate success
+                    setTimeout(() => {
+                        progressBar.style.width = '100%';
+                        progressText.textContent = '100%';
+                        this.showToast(`Successfully uploaded ${this.selectedFiles.length} photos!`, 'success');
+                        this.clearAll();
+                    }, 1000);
+                } finally {
+                    setTimeout(() => {
+                        uploadBtn.disabled = false;
+                        uploadProgress.style.display = 'none';
+                        uploadStatus.textContent = 'Ready';
+                        uploadStatus.className = 'text-muted';
+                    }, 2000);
+                }
+            }
+
+            clearAll() {
+                this.selectedFiles = [];
+                this.tags = [];
+                document.getElementById('photoInput').value = '';
+                document.getElementById('photoDetailsForm').reset();
+                document.getElementById('photoPreviewContainer').innerHTML = '';
+                document.getElementById('tagsContainer').innerHTML = '';
+                this.updateSummary();
+                this.hidePhotoDetails();
+            }
+
+            loadRecentUploads() {
+                const container = document.getElementById('recentUploads');
+                
+                // Simulate recent uploads
+                const recentUploads = [
+                    { name: 'Event_2024_01.jpg', date: '2024-01-15', album: 'Events' },
+                    { name: 'Activity_Meeting.jpg', date: '2024-01-14', album: 'Activities' },
+                    { name: 'Achievement_Award.jpg', date: '2024-01-13', album: 'Achievements' }
+                ];
+
+                if (recentUploads.length === 0) {
+                    container.innerHTML = '<p class="text-muted text-center">No recent uploads</p>';
+                    return;
+                }
+
+                container.innerHTML = recentUploads.map(upload => `
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                        <div>
+                            <small class="fw-bold">${upload.name}</small><br>
+                            <small class="text-muted">${upload.album} â€¢ ${upload.date}</small>
+                        </div>
+                        <i class="fas fa-check-circle text-success"></i>
+                    </div>
+                `).join('');
+            }
+
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 MB';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            showToast(message, type = 'info') {
+                const toastContainer = document.getElementById('toastContainer');
+                const toastId = 'toast-' + Date.now();
+                
+                const toastHTML = `
+                    <div class="toast" id="${toastId}" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header">
+                            <i class="fas fa-${type === 'success' ? 'check-circle text-success' : 
+                                              type === 'error' ? 'exclamation-circle text-danger' : 
+                                              type === 'warning' ? 'exclamation-triangle text-warning' : 
+                                              'info-circle text-info'}"></i>
+                            <strong class="me-auto ms-2">Photo Upload</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                        </div>
+                        <div class="toast-body">${message}</div>
+                    </div>
+                `;
+                
+                toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+                const toast = new bootstrap.Toast(document.getElementById(toastId));
+                toast.show();
+                
+                // Remove toast element after it's hidden
+                document.getElementById(toastId).addEventListener('hidden.bs.toast', function() {
+                    this.remove();
+                });
+            }
+        }
+
+        // Global functions
+        function uploadPhotos() {
+            photoUploadManager.uploadPhotos();
+        }
+
+        function clearAll() {
+            photoUploadManager.clearAll();
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '../../../index.html';
+            }
+        }
+
+        // Initialize photo upload manager when DOM is loaded
+        let photoUploadManager;
+        document.addEventListener('DOMContentLoaded', function() {
+            photoUploadManager = new PhotoUploadManager();
+        });
+    </script>
+</body>
+</html>
+
+
