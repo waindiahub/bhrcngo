@@ -1,0 +1,63 @@
+<svg width="400" height="500" viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="founderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#495057;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#6c757d;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#adb5bd;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="portraitGradient" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#f8f9fa;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#e9ecef;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#dee2e6;stop-opacity:1" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="500" fill="url(#founderGradient)"/>
+  
+  <!-- Portrait Frame -->
+  <rect x="50" y="50" width="300" height="400" fill="url(#portraitGradient)" rx="20"/>
+  <rect x="50" y="50" width="300" height="400" fill="none" stroke="#495057" stroke-width="3" rx="20"/>
+  
+  <!-- Portrait Silhouette -->
+  <g transform="translate(200, 250)">
+    <!-- Head -->
+    <ellipse cx="0" cy="-80" rx="45" ry="55" fill="#495057" opacity="0.7"/>
+    
+    <!-- Hair -->
+    <path d="M-45 -120 Q-50 -140 -30 -135 Q0 -145 30 -135 Q50 -140 45 -120 Q45 -100 35 -90 Q20 -85 0 -85 Q-20 -85 -35 -90 Q-45 -100 -45 -120 Z" 
+          fill="#343a40" opacity="0.8"/>
+    
+    <!-- Shoulders/Suit -->
+    <path d="M-70 -10 Q-80 0 -85 20 L-85 120 L85 120 L85 20 Q80 0 70 -10 Q50 -20 30 -15 Q0 -25 -30 -15 Q-50 -20 -70 -10 Z" 
+          fill="#495057" opacity="0.6"/>
+    
+    <!-- Suit Jacket -->
+    <path d="M-60 -5 Q-40 -15 -20 -10 L-25 30 Q-35 35 -45 40 L-50 80 L-70 80 L-70 20 Q-65 10 -60 -5 Z" 
+          fill="#343a40" opacity="0.7"/>
+    <path d="M60 -5 Q40 -15 20 -10 L25 30 Q35 35 45 40 L50 80 L70 80 L70 20 Q65 10 60 -5 Z" 
+          fill="#343a40" opacity="0.7"/>
+    
+    <!-- Shirt -->
+    <rect x="-20" y="-10" width="40" height="90" fill="#f8f9fa" opacity="0.9"/>
+    
+    <!-- Tie -->
+    <path d="M-8 -10 L8 -10 L12 20 L8 80 L-8 80 L-12 20 Z" fill="#dc3545" opacity="0.8"/>
+    
+    <!-- Collar -->
+    <path d="M-20 -10 L-8 -10 L-15 10 L-20 5 Z" fill="#f8f9fa" opacity="0.9"/>
+    <path d="M20 -10 L8 -10 L15 10 L20 5 Z" fill="#f8f9fa" opacity="0.9"/>
+  </g>
+  
+  <!-- Decorative Elements -->
+  <circle cx="80" cy="100" r="3" fill="#007bff" opacity="0.5"/>
+  <circle cx="320" cy="120" r="4" fill="#28a745" opacity="0.4"/>
+  <circle cx="100" cy="380" r="2" fill="#ffc107" opacity="0.6"/>
+  <circle cx="300" cy="360" r="3" fill="#17a2b8" opacity="0.5"/>
+  
+  <!-- Name Plate -->
+  <rect x="75" y="460" width="250" height="30" fill="rgba(0,0,0,0.8)" rx="5"/>
+  <text x="200" y="480" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    Founder & Chairman
+  </text>
+</svg>
