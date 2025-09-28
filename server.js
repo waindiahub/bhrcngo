@@ -19,7 +19,6 @@ const db = require('./config/database');
 // Import routes
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
-
 const donationRoutes = require('./routes/donations');
 const eventRoutes = require('./routes/events');
 const newsRoutes = require('./routes/news');
@@ -38,26 +37,39 @@ const contactRoutes = require('./routes/contact');
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-// Security middleware
+// Helmet with open CSP (⚠️ allows all origins)
 app.use(helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" }
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+// Override CSP to allow all connections
+app.use(helmet.contentSecurityPolicy({
+  useDefaults: true,
+  directives: {
+    defaultSrc: ["*"],
+    connectSrc: ["*"], // ✅ allow API calls from any domain
+    scriptSrc: ["*"],
+    styleSrc: ["*"],
+    imgSrc: ["*"],
+    fontSrc: ["*"],
+    frameSrc: ["*"],
+    objectSrc: ["*"]
+  }
 }));
 
 // CORS configuration - Allow all origins
 app.use(cors({
-    origin: true, // Allow all origins
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 // Rate limiting
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
-    message: {
-        error: 'Too many requests from this IP, please try again later.'
-    }
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  message: { error: 'Too many requests from this IP, please try again later.' }
 });
 app.use('/api/', limiter);
 
@@ -76,17 +88,16 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-    res.json({
-        status: 'OK',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime()
-    });
+  res.json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
 });
 
 // Route registration
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-
 app.use('/api/donations', donationRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/news', newsRoutes);
@@ -100,68 +111,51 @@ app.use('/api/files', fileRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/member', memberRoutes);
 app.use('/api/contact', contactRoutes);
-
-// Admin routes (must be after regular routes to avoid conflicts)
 app.use('/api/admin', adminRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
-    res.status(404).json({
-        success: false,
-        message: 'API endpoint not found',
-        path: req.originalUrl
-    });
+  res.status(404).json({
+    success: false,
+    message: 'API endpoint not found',
+    path: req.originalUrl
+  });
 });
 
 // Global error handler
 app.use((err, req, res, next) => {
-    console.error('Error:', err);
-    
-    // Handle specific error types
-    if (err.name === 'ValidationError') {
-        return res.status(400).json({
-            success: false,
-            message: 'Validation error',
-            errors: err.details
-        });
-    }
-    
-    if (err.name === 'UnauthorizedError') {
-        return res.status(401).json({
-            success: false,
-            message: 'Unauthorized access'
-        });
-    }
-    
-    // Default error response
-    res.status(err.status || 500).json({
-        success: false,
-        message: err.message || 'Internal server error',
-        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-    });
+  console.error('Error:', err);
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({ success: false, message: 'Validation error', errors: err.details });
+  }
+  if (err.name === 'UnauthorizedError') {
+    return res.status(401).json({ success: false, message: 'Unauthorized access' });
+  }
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || 'Internal server error',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  });
 });
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`🚀 BHRC Backend Server running on port ${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/health`);
-    console.log(`🌐 API Base URL: http://localhost:${PORT}/api`);
-    
-    // Test database connection
-    db.testConnection()
-        .then(() => console.log('✅ Database connected successfully'))
-        .catch(err => console.error('❌ Database connection failed:', err.message));
+  console.log(`🚀 BHRC Backend Server running on port ${PORT}`);
+  console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`🌐 API Base URL: http://localhost:${PORT}/api`);
+  db.testConnection()
+    .then(() => console.log('✅ Database connected successfully'))
+    .catch(err => console.error('❌ Database connection failed:', err.message));
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-    console.log('SIGTERM received, shutting down gracefully');
-    process.exit(0);
+  console.log('SIGTERM received, shutting down gracefully');
+  process.exit(0);
 });
-
 process.on('SIGINT', () => {
-    console.log('SIGINT received, shutting down gracefully');
-    process.exit(0);
+  console.log('SIGINT received, shutting down gracefully');
+  process.exit(0);
 });
 
 module.exports = app;
