@@ -143,9 +143,9 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
-    console.log(🚀 BHRC Backend Server running on port ${PORT});
-    console.log(📊 Health check: http://localhost:${PORT}/health);
-    console.log(🌐 API Base URL: http://localhost:${PORT}/api);
+    console.log(`🚀 BHRC Backend Server running on port ${PORT}`);
+    console.log(`📊 Health check: http://localhost:${PORT}/health`);
+    console.log(`🌐 API Base URL: http://localhost:${PORT}/api`);
     
     // Test database connection
     db.testConnection()
