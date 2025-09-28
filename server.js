@@ -45,8 +45,8 @@ app.use(helmet({
 
 // CORS configuration - Allow all origins
 app.use(cors({
-    origin: true, // Allow all origins
-    credentials: true,
+    origin: '*',
+    credentials: false,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
@@ -143,9 +143,9 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`🚀 BHRC Backend Server running on port ${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/health`);
-    console.log(`🌐 API Base URL: http://localhost:${PORT}/api`);
+    console.log(🚀 BHRC Backend Server running on port ${PORT});
+    console.log(📊 Health check: http://localhost:${PORT}/health);
+    console.log(🌐 API Base URL: http://localhost:${PORT}/api);
     
     // Test database connection
     db.testConnection()
