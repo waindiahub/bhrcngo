@@ -9,10 +9,10 @@ const mysql = require('mysql2/promise');
 
 // Database configuration - using the specified credentials
 const dbConfig = {
-    host: '37.27.60.109',
-    user: 'tzdmiohj_bhmc',
-    password: 'tzdmiohj_bhmc',
-    database: 'tzdmiohj_bhmc',
+    host: '193.203.184.228',
+    user: 'u851023220_bhrcdatabasee',
+    password: 'u851023220_BHRC-pwd',
+    database: 'u851023220_bhrcdatabasee',
     charset: 'utf8mb4',
     timezone: '+00:00',
     // Connection pool settings

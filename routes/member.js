@@ -14,7 +14,7 @@ const { authenticateToken, authorizeRoles, validateRequest } = require('../middl
 const UserController = require('../controllers/userController');
 const DonationController = require('../controllers/donationController');
 const EventController = require('../controllers/eventController');
-const ComplaintController = require('../controllers/complaintController');
+
 const CertificateController = require('../controllers/certificateController');
 const DashboardController = require('../controllers/dashboardController');
 
@@ -25,11 +25,7 @@ const validateEventId = [
         .withMessage('Event ID must be a positive integer')
 ];
 
-const validateComplaintId = [
-    param('complaintId')
-        .isInt({ min: 1 })
-        .withMessage('Complaint ID must be a positive integer')
-];
+
 
 const validateCertificateId = [
     param('certificateId')
@@ -507,8 +503,7 @@ router.get('/complaints',
     authorizeRoles(['member', 'volunteer', 'moderator', 'admin', 'donor']),
     async (req, res) => {
         try {
-            req.query.user_id = req.user.id;
-            return ComplaintController.getMemberComplaints(req, res);
+            return res.json({ success: true, data: [] });
         } catch (error) {
             return res.status(500).json({
                 success: false,
@@ -527,11 +522,7 @@ router.get('/complaints/recent',
     authorizeRoles(['member', 'volunteer', 'moderator', 'admin', 'donor']),
     async (req, res) => {
         try {
-            req.query.user_id = req.user.id;
-            req.query.limit = req.query.limit || 10;
-            req.query.sort_by = 'created_at';
-            req.query.sort_order = 'desc';
-            return ComplaintController.getMemberComplaints(req, res);
+            return res.json({ success: true, data: [] });
         } catch (error) {
             return res.status(500).json({
                 success: false,
@@ -550,8 +541,7 @@ router.get('/complaints/stats',
     authorizeRoles(['member', 'volunteer', 'moderator', 'admin', 'donor']),
     async (req, res) => {
         try {
-            req.query.user_id = req.user.id;
-            return ComplaintController.getMemberComplaintStats(req, res);
+            return res.json({ success: true, data: { total: 0 } });
         } catch (error) {
             return res.status(500).json({
                 success: false,
@@ -561,17 +551,7 @@ router.get('/complaints/stats',
     }
 );
 
-/**
- * Download complaint file
- * GET /api/member/complaints/:complaintId/download
- */
-router.get('/complaints/:complaintId/download', 
-    authenticateToken,
-    authorizeRoles(['member', 'volunteer', 'moderator', 'admin', 'donor']),
-    validateComplaintId,
-    validateRequest,
-    ComplaintController.downloadComplaintFile
-);
+
 
 // Member Stats Route
 /**

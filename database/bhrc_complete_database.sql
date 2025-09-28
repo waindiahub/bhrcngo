@@ -1,13 +1,10 @@
--- BHRC India Complete Database Schema
--- Database: tzdmiohj_bhmc
--- Combined from: schema.sql, donations_schema.sql, events_schema.sql, settings_schema.sql, complaints.sql
-
--- Create database if not exists
+-- BHRC India Complete Database with Updated Data
+-- Import this file into phpMyAdmin to get the complete database with all tables and sample data
 
 -- =====================================================
 -- USERS TABLE
 -- =====================================================
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -34,11 +31,10 @@ CREATE TABLE users (
     INDEX idx_status (status)
 );
 
-
 -- =====================================================
 -- EVENTS TABLE
 -- =====================================================
-CREATE TABLE events (
+CREATE TABLE IF NOT EXISTS events (
     id INT PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(200) NOT NULL,
     description TEXT,
@@ -83,7 +79,7 @@ CREATE TABLE events (
 );
 
 -- Event Registrations Table
-CREATE TABLE event_registrations (
+CREATE TABLE IF NOT EXISTS event_registrations (
     id INT PRIMARY KEY AUTO_INCREMENT,
     event_id INT NOT NULL,
     user_id INT,
@@ -113,7 +109,7 @@ CREATE TABLE event_registrations (
 -- =====================================================
 -- DONATIONS TABLE
 -- =====================================================
-CREATE TABLE donations (
+CREATE TABLE IF NOT EXISTS donations (
     id INT PRIMARY KEY AUTO_INCREMENT,
     reference_number VARCHAR(50) UNIQUE NOT NULL,
     amount DECIMAL(12,2) NOT NULL,
@@ -183,7 +179,7 @@ CREATE TABLE donations (
 -- =====================================================
 -- SYSTEM SETTINGS TABLE
 -- =====================================================
-CREATE TABLE system_settings (
+CREATE TABLE IF NOT EXISTS system_settings (
     id INT PRIMARY KEY AUTO_INCREMENT,
     setting_key VARCHAR(100) UNIQUE NOT NULL,
     setting_value TEXT,
@@ -203,7 +199,7 @@ CREATE TABLE system_settings (
 );
 
 -- Settings Backup Table
-CREATE TABLE settings_backups (
+CREATE TABLE IF NOT EXISTS settings_backups (
     id INT PRIMARY KEY AUTO_INCREMENT,
     backup_name VARCHAR(100) NOT NULL,
     settings_data JSON NOT NULL,
@@ -215,11 +211,9 @@ CREATE TABLE settings_backups (
 );
 
 -- =====================================================
--- ADDITIONAL TABLES
+-- GALLERY TABLE
 -- =====================================================
-
--- Gallery table for images and media
-CREATE TABLE gallery (
+CREATE TABLE IF NOT EXISTS gallery (
     id INT PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(200) NOT NULL,
     description TEXT,
@@ -240,8 +234,10 @@ CREATE TABLE gallery (
     INDEX idx_display_order (display_order)
 );
 
--- News and articles table
-CREATE TABLE news_articles (
+-- =====================================================
+-- NEWS ARTICLES TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS news_articles (
     id INT PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(200) NOT NULL,
     slug VARCHAR(200) UNIQUE NOT NULL,
@@ -264,8 +260,10 @@ CREATE TABLE news_articles (
     INDEX idx_published_at (published_at)
 );
 
--- Certificates table for member certificates
-CREATE TABLE certificates (
+-- =====================================================
+-- CERTIFICATES TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS certificates (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
     certificate_type ENUM('membership', 'participation', 'appreciation', 'training', 'volunteer') NOT NULL,
@@ -289,8 +287,10 @@ CREATE TABLE certificates (
     INDEX idx_verification_code (verification_code)
 );
 
--- Activity logs table for audit trail
-CREATE TABLE activity_logs (
+-- =====================================================
+-- ACTIVITY LOGS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS activity_logs (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT,
     action VARCHAR(100) NOT NULL,
@@ -311,81 +311,36 @@ CREATE TABLE activity_logs (
 );
 
 -- =====================================================
--- TRIGGERS
+-- ERROR LOGS TABLE
 -- =====================================================
-
-
-
--- Trigger to update event registration count
-DELIMITER $$
-CREATE TRIGGER update_event_registrations_count
-AFTER INSERT ON event_registrations
-FOR EACH ROW
-BEGIN
-    UPDATE events 
-    SET current_registrations = (
-        SELECT COUNT(*) FROM event_registrations 
-        WHERE event_id = NEW.event_id AND attendance_status != 'cancelled'
-    )
-    WHERE id = NEW.event_id;
-END$$
-DELIMITER ;
-
--- =====================================================
--- VIEWS
--- =====================================================
-
-
-
--- Donation Statistics View
-CREATE VIEW donation_statistics AS
-SELECT 
-    COUNT(*) as total_donations,
-    SUM(CASE WHEN status = 'completed' THEN amount ELSE 0 END) as total_amount,
-    AVG(CASE WHEN status = 'completed' THEN amount ELSE NULL END) as average_donation,
-    COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_donations,
-    COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_donations,
-    COUNT(CASE WHEN is_recurring = TRUE THEN 1 END) as recurring_donations,
-    COUNT(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 END) as monthly_donations,
-    SUM(CASE WHEN status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN amount ELSE 0 END) as monthly_amount
-FROM donations;
-
--- Event Statistics View
-CREATE VIEW event_statistics AS
-SELECT 
-    COUNT(*) as total_events,
-    COUNT(CASE WHEN status = 'upcoming' THEN 1 END) as upcoming_events,
-    COUNT(CASE WHEN status = 'ongoing' THEN 1 END) as ongoing_events,
-    COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_events,
-    COUNT(CASE WHEN registration_required = TRUE THEN 1 END) as registration_required_events,
-    SUM(current_registrations) as total_registrations,
-    COUNT(CASE WHEN event_date >= CURDATE() AND event_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) THEN 1 END) as upcoming_month_events
-FROM events;
-
--- Settings by Category View
-CREATE VIEW settings_by_category AS
-SELECT 
-    category,
-    COUNT(*) as setting_count,
-    COUNT(CASE WHEN is_public = TRUE THEN 1 END) as public_settings
-FROM system_settings
-GROUP BY category;
-
--- Recent Activity View
-CREATE VIEW recent_activity AS
-SELECT 
-    al.*,
-    u.username,
-    u.first_name,
-    u.last_name
-FROM activity_logs al
-LEFT JOIN users u ON al.user_id = u.id
-ORDER BY al.created_at DESC
-LIMIT 100;
+CREATE TABLE IF NOT EXISTS error_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NULL,
+    error_message TEXT NOT NULL,
+    stack_trace TEXT NULL,
+    context JSON NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user_id (user_id),
+    INDEX idx_created_at (created_at),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
 
 -- =====================================================
 -- SAMPLE DATA
 -- =====================================================
+
+-- Clear existing data (optional - remove if you want to keep existing data)
+DELETE FROM error_logs;
+DELETE FROM activity_logs;
+DELETE FROM certificates;
+DELETE FROM news_articles;
+DELETE FROM gallery;
+DELETE FROM settings_backups;
+DELETE FROM system_settings;
+DELETE FROM donations;
+DELETE FROM event_registrations;
+DELETE FROM events;
+DELETE FROM users;
 
 -- Insert default admin user
 INSERT INTO users (username, email, password_hash, first_name, last_name, role, status, email_verified, phone, city, state) VALUES
@@ -393,8 +348,6 @@ INSERT INTO users (username, email, password_hash, first_name, last_name, role, 
 ('john_doe', 'john@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'John', 'Doe', 'member', 'active', TRUE, '+91-9876543211', 'Mumbai', 'Maharashtra'),
 ('jane_smith', 'jane@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Jane', 'Smith', 'volunteer', 'active', TRUE, '+91-9876543212', 'Bangalore', 'Karnataka'),
 ('moderator', 'mod@bhrcdata.online', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Moderator', 'User', 'moderator', 'active', TRUE, '+91-9876543213', 'Chennai', 'Tamil Nadu');
-
-
 
 -- Insert sample events
 INSERT INTO events (title, description, event_date, event_time, location, event_type, capacity, registration_required, status, created_by, organizer_id) VALUES
@@ -466,34 +419,120 @@ INSERT INTO gallery (title, description, image_url, category, uploaded_by, is_fe
 ('BHRC Award Ceremony', 'Annual award ceremony recognizing human rights defenders', '/uploads/gallery/awards2024.jpg', 'awards', 1, TRUE);
 
 -- Insert sample news articles
-INSERT INTO news_articles (title, slug, content, excerpt, category, status, author_id, published_at) VALUES
-('BHRC India Launches New Human Rights Initiative', 'bhrc-new-initiative-2024', 'BHRC India has launched a comprehensive new initiative to promote human rights awareness across the country...', 'New initiative to promote human rights awareness nationwide', 'news', 'published', 1, NOW()),
-('Legal Aid Program Reaches 1000 Beneficiaries', 'legal-aid-1000-beneficiaries', 'Our legal aid program has successfully reached over 1000 beneficiaries across various states...', 'Legal aid program milestone achievement', 'press_release', 'published', 1, DATE_SUB(NOW(), INTERVAL 7 DAY)),
-('Upcoming Workshop on Civil Rights', 'upcoming-civil-rights-workshop', 'Join us for an informative workshop on civil rights and legal remedies...', 'Workshop announcement for civil rights education', 'announcement', 'published', 1, DATE_SUB(NOW(), INTERVAL 3 DAY));
-
--- Insert sample activity logs
-INSERT INTO activity_logs (user_id, action, entity_type, entity_id, description, ip_address) VALUES
-(1, 'login', 'user', 1, 'Admin user logged in', '192.168.1.1'),
-
-(2, 'register', 'event', 1, 'Registered for Human Rights Awareness Workshop', '192.168.1.2'),
-(2, 'donate', 'donation', 1, 'Made donation of ₹5000', '192.168.1.2');
-
--- =====================================================
--- ERROR LOGS TABLE
--- =====================================================
-CREATE TABLE IF NOT EXISTS error_logs (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NULL,
-    error_message TEXT NOT NULL,
-    stack_trace TEXT NULL,
-    context JSON NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_user_id (user_id),
-    INDEX idx_created_at (created_at),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+INSERT INTO news_articles (title, slug, content, excerpt, featured_image, category, status, author_id, published_at, views_count, created_at, updated_at) VALUES
+(
+    'BHRC India Launches New Human Rights Initiative',
+    'bhrc-new-initiative-2024',
+    'BHRC India has launched a comprehensive new initiative to promote human rights awareness across the country. This initiative focuses on education, legal aid, and community outreach programs that aim to empower citizens with knowledge about their fundamental rights.\n\n## Key Features of the Initiative:\n\n- **Educational Workshops**: Regular workshops in schools and communities\n- **Legal Aid Services**: Free legal assistance for underprivileged communities\n- **Awareness Campaigns**: Digital and traditional media campaigns\n- **Community Outreach**: Direct engagement with rural and urban communities\n\nThis initiative represents a significant step forward in our mission to protect and promote human rights across India.',
+    'New initiative to promote human rights awareness nationwide',
+    '',
+    'news',
+    'published',
+    1,
+    NOW(),
+    45,
+    NOW(),
+    NOW()
+),
+(
+    'Legal Aid Program Reaches 1000 Beneficiaries',
+    'legal-aid-1000-beneficiaries',
+    'Our legal aid program has successfully reached over 1000 beneficiaries across various states. The program provides free legal assistance to underprivileged communities who cannot afford legal representation.\n\n## Program Impact:\n\n- **1000+ Beneficiaries**: Direct legal assistance provided\n- **15 States Covered**: Pan-India presence\n- **85% Success Rate**: Cases resolved in favor of beneficiaries\n- **₹50 Lakh Saved**: Legal fees saved for beneficiaries\n\n### Success Stories:\n\n1. **Land Rights Case**: Helped 50 families reclaim their ancestral land\n2. **Labor Rights**: Secured fair wages for 200 construction workers\n3. **Women\'s Rights**: Provided legal support to 150 domestic violence survivors\n\nThis milestone demonstrates our commitment to making justice accessible to all.',
+    'Legal aid program milestone achievement',
+    '',
+    'press_release',
+    'published',
+    1,
+    DATE_SUB(NOW(), INTERVAL 7 DAY),
+    32,
+    DATE_SUB(NOW(), INTERVAL 7 DAY),
+    DATE_SUB(NOW(), INTERVAL 7 DAY)
+),
+(
+    'Upcoming Workshop on Civil Rights',
+    'upcoming-civil-rights-workshop',
+    'Join us for an informative workshop on civil rights and legal remedies. This workshop will cover fundamental rights, legal procedures, and how to seek justice when your rights are violated.\n\n## Workshop Details:\n\n- **Date**: [To be announced]\n- **Time**: 10:00 AM - 4:00 PM\n- **Venue**: BHRC Community Center, New Delhi\n- **Registration**: Free (Limited seats available)\n\n### Topics Covered:\n\n1. **Fundamental Rights**: Understanding your constitutional rights\n2. **Legal Procedures**: How to file complaints and petitions\n3. **Court Processes**: Navigating the legal system\n4. **Documentation**: Required documents for legal cases\n5. **Case Studies**: Real examples of successful cases\n\n### Who Should Attend:\n\n- Students and young professionals\n- Community leaders\n- Social workers\n- Anyone interested in human rights\n\n**Registration**: Contact us at info@bhrcdata.online or call +91-11-12345678',
+    'Workshop announcement for civil rights education',
+    '',
+    'announcement',
+    'published',
+    1,
+    DATE_SUB(NOW(), INTERVAL 3 DAY),
+    28,
+    DATE_SUB(NOW(), INTERVAL 3 DAY),
+    DATE_SUB(NOW(), INTERVAL 3 DAY)
+),
+(
+    'Draft Article: Human Rights in Digital Age',
+    'draft-human-rights-digital-age',
+    'This is a draft article about human rights in the digital age. It covers topics like digital privacy, online freedom of expression, and cyber rights.\n\n## Introduction\n\nAs we move deeper into the digital age, new challenges and opportunities arise for human rights protection. The internet has become a fundamental part of our daily lives, but it also presents unique challenges to traditional human rights frameworks.\n\n## Key Areas of Concern\n\n### Digital Privacy\n- Data protection and privacy rights\n- Surveillance and monitoring\n- Consent and data ownership\n\n### Online Freedom of Expression\n- Social media and free speech\n- Content moderation policies\n- Digital censorship\n\n### Cyber Rights\n- Access to information\n- Digital divide\n- Online harassment and cyberbullying\n\n## Conclusion\n\nThis article is still being developed and will be published soon with comprehensive analysis and recommendations.',
+    'Exploring human rights challenges in the digital era',
+    '',
+    'article',
+    'draft',
+    1,
+    NULL,
+    0,
+    NOW(),
+    NOW()
+),
+(
+    'Blog Post: Community Outreach Success',
+    'blog-community-outreach-success',
+    'Our community outreach programs have been making a significant impact in rural areas. This blog post shares some success stories and lessons learned from our field work.\n\n## Community Outreach Impact\n\nOver the past year, our community outreach team has visited 25 villages across 5 states, conducting awareness sessions and providing direct assistance to community members.\n\n### Success Stories\n\n#### Village Empowerment in Rajasthan\nIn a small village in Rajasthan, we helped establish a women\'s self-help group that now provides micro-finance services to 50 families. The group has successfully provided loans totaling ₹5 lakh.\n\n#### Education Initiative in Bihar\nOur education initiative in Bihar has helped 200 children return to school by providing scholarships and school supplies. The dropout rate in the target area has reduced by 60%.\n\n#### Health Awareness in Odisha\nHealth awareness camps in Odisha have reached 1000+ people, providing free health checkups and connecting them with government health schemes.\n\n## Lessons Learned\n\n1. **Community Engagement**: Direct community involvement is crucial for success\n2. **Local Partnerships**: Working with local organizations increases impact\n3. **Sustainability**: Programs must be designed for long-term sustainability\n4. **Cultural Sensitivity**: Understanding local culture and customs is essential\n\n## Future Plans\n\nWe plan to expand our outreach to 50 more villages in the next year, focusing on areas with limited access to legal and social services.',
+    'Sharing success stories from our community outreach programs',
+    '',
+    'blog',
+    'published',
+    1,
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    19,
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    DATE_SUB(NOW(), INTERVAL 1 DAY)
 );
 
 -- Insert sample certificates
 INSERT INTO certificates (user_id, certificate_type, certificate_number, title, description, issued_date, issued_by) VALUES
 (2, 'membership', 'CERT2024001', 'BHRC Membership Certificate', 'Certificate of membership for BHRC India', '2024-01-01', 1),
 (3, 'participation', 'CERT2024002', 'Workshop Participation Certificate', 'Certificate for participating in Human Rights Workshop', '2024-02-15', 1);
+
+-- Insert sample activity logs
+INSERT INTO activity_logs (user_id, action, entity_type, entity_id, description, ip_address) VALUES
+(1, 'login', 'user', 1, 'Admin user logged in', '192.168.1.1'),
+(2, 'register', 'event', 1, 'Registered for Human Rights Awareness Workshop', '192.168.1.2'),
+(2, 'donate', 'donation', 1, 'Made donation of ₹5000', '192.168.1.2');
+
+-- =====================================================
+-- VERIFICATION QUERIES
+-- =====================================================
+
+-- Verify the data
+SELECT 'Users' as table_name, COUNT(*) as count FROM users
+UNION ALL
+SELECT 'Events', COUNT(*) FROM events
+UNION ALL
+SELECT 'Event Registrations', COUNT(*) FROM event_registrations
+UNION ALL
+SELECT 'Donations', COUNT(*) FROM donations
+UNION ALL
+SELECT 'System Settings', COUNT(*) FROM system_settings
+UNION ALL
+SELECT 'Gallery', COUNT(*) FROM gallery
+UNION ALL
+SELECT 'News Articles', COUNT(*) FROM news_articles
+UNION ALL
+SELECT 'Certificates', COUNT(*) FROM certificates
+UNION ALL
+SELECT 'Activity Logs', COUNT(*) FROM activity_logs;
+
+-- Show sample articles
+SELECT 
+    id, 
+    title, 
+    category, 
+    status, 
+    author_id, 
+    created_at,
+    views_count
+FROM news_articles 
+ORDER BY created_at DESC;

@@ -316,8 +316,17 @@ const requireRole = AuthMiddleware.authorize;
 const optionalAuth = AuthMiddleware.optionalAuth;
 const validateRequest = AuthMiddleware.validateRequest;
 const logActivity = AuthMiddleware.logActivity;
-const logError = async (message) => {
+const logError = async (message, error, userId) => {
     console.error(`[ERROR] ${new Date().toISOString()}: ${message}`);
+    if (error) {
+        console.error('Error details:', error.message);
+        if (error.stack) {
+            console.error('Stack trace:', error.stack);
+        }
+    }
+    if (userId) {
+        console.error(`User ID: ${userId}`);
+    }
 };
 
 module.exports = AuthMiddleware;

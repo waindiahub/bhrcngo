@@ -6,20 +6,7 @@
 
 const express = require('express');
 const router = express.Router();
-const mysql = require('mysql2/promise');
-
-/**
- * Database connection configuration
- */
-const dbConfig = {
-    host: '37.27.60.109',
-    user: 'tzdmiohj_bhmc',
-    password: 'tzdmiohj_bhmc',
-    database: 'tzdmiohj_bhmc',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-};
+const db = require('../config/database');
 
 /**
  * @route GET /api/public/stats
@@ -27,26 +14,30 @@ const dbConfig = {
  * @access Public
  */
 router.get('/stats', async (req, res) => {
-    let connection;
     try {
-        connection = await mysql.createConnection(dbConfig);
-        
         // Get basic public statistics
-        const [userStats] = await connection.execute(
+        const userStats = await db.query(
             'SELECT COUNT(*) as total_users FROM users WHERE status = "active"'
         );
         
-        const [eventStats] = await connection.execute(
+        const eventStats = await db.query(
             'SELECT COUNT(*) as total_events FROM events WHERE status = "published"'
         );
         
-        const [newsStats] = await connection.execute(
-            'SELECT COUNT(*) as total_news FROM news WHERE status = "published"'
+        const newsStats = await db.query(
+            'SELECT COUNT(*) as total_news FROM news_articles WHERE status = "published"'
         );
         
-        const [complaintStats] = await connection.execute(
-            'SELECT COUNT(*) as total_complaints FROM complaints WHERE status != "draft"'
-        );
+        // Try to get complaints stats, but don't fail if table doesn't exist
+        let complaintStats = { total_complaints: 0 };
+        try {
+            const complaintResult = await db.query(
+                'SELECT COUNT(*) as total_complaints FROM complaints WHERE status != "draft"'
+            );
+            complaintStats = complaintResult[0];
+        } catch (error) {
+            console.log('Complaints table not found, skipping complaints stats');
+        }
         
         res.json({
             success: true,
@@ -54,7 +45,7 @@ router.get('/stats', async (req, res) => {
                 total_users: userStats[0].total_users,
                 total_events: eventStats[0].total_events,
                 total_news: newsStats[0].total_news,
-                total_complaints: complaintStats[0].total_complaints
+                total_complaints: complaintStats.total_complaints
             }
         });
         
@@ -64,10 +55,6 @@ router.get('/stats', async (req, res) => {
             success: false,
             message: 'Error fetching public statistics'
         });
-    } finally {
-        if (connection) {
-            await connection.end();
-        }
     }
 });
 
@@ -77,14 +64,11 @@ router.get('/stats', async (req, res) => {
  * @access Public
  */
 router.get('/events', async (req, res) => {
-    let connection;
     try {
         const limit = parseInt(req.query.limit) || 10;
         const offset = parseInt(req.query.offset) || 0;
         
-        connection = await mysql.createConnection(dbConfig);
-        
-        const [events] = await connection.execute(
+        const events = await db.query(
             `SELECT id, title, description, event_date, location, image_url, created_at 
              FROM events 
              WHERE status = 'published' AND event_date >= CURDATE()
@@ -104,10 +88,6 @@ router.get('/events', async (req, res) => {
             success: false,
             message: 'Error fetching events'
         });
-    } finally {
-        if (connection) {
-            await connection.end();
-        }
     }
 });
 
@@ -117,16 +97,13 @@ router.get('/events', async (req, res) => {
  * @access Public
  */
 router.get('/news', async (req, res) => {
-    let connection;
     try {
         const limit = parseInt(req.query.limit) || 10;
         const offset = parseInt(req.query.offset) || 0;
         
-        connection = await mysql.createConnection(dbConfig);
-        
-        const [news] = await connection.execute(
-            `SELECT id, title, content, image_url, created_at, updated_at
-             FROM news 
+        const news = await db.query(
+            `SELECT id, title, slug, excerpt, content, featured_image, category, created_at, updated_at
+             FROM news_articles 
              WHERE status = 'published'
              ORDER BY created_at DESC 
              LIMIT ? OFFSET ?`,
@@ -144,10 +121,57 @@ router.get('/news', async (req, res) => {
             success: false,
             message: 'Error fetching news'
         });
-    } finally {
-        if (connection) {
-            await connection.end();
+    }
+});
+
+/**
+ * @route GET /api/public/news/:id
+ * @desc Get single published article by ID (no authentication required)
+ * @access Public
+ */
+router.get('/news/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        if (!id || isNaN(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Valid article ID is required'
+            });
         }
+        
+        const articles = await db.query(
+            `SELECT id, title, slug, excerpt, content, featured_image, category, 
+                    created_at, updated_at, views_count
+             FROM news_articles 
+             WHERE id = ? AND status = 'published'`,
+            [id]
+        );
+        
+        if (articles.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Article not found'
+            });
+        }
+        
+        // Increment view count
+        await db.query(
+            'UPDATE news_articles SET views_count = views_count + 1 WHERE id = ?',
+            [id]
+        );
+        
+        res.json({
+            success: true,
+            data: articles[0]
+        });
+        
+    } catch (error) {
+        console.error('Error fetching article:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching article'
+        });
     }
 });
 
@@ -157,14 +181,11 @@ router.get('/news', async (req, res) => {
  * @access Public
  */
 router.get('/contact-info', async (req, res) => {
-    let connection;
     try {
-        connection = await mysql.createConnection(dbConfig);
-        
-        const [settings] = await connection.execute(
+        const settings = await db.query(
             `SELECT setting_key, setting_value 
-             FROM settings 
-             WHERE setting_key IN ('contact_email', 'contact_phone', 'contact_address', 'office_hours')`
+             FROM system_settings 
+             WHERE setting_key IN ('contact_email', 'contact_phone', 'address', 'office_hours')`
         );
         
         const contactInfo = {};
@@ -183,10 +204,6 @@ router.get('/contact-info', async (req, res) => {
             success: false,
             message: 'Error fetching contact information'
         });
-    } finally {
-        if (connection) {
-            await connection.end();
-        }
     }
 });
 

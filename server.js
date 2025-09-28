@@ -19,7 +19,7 @@ const db = require('./config/database');
 // Import routes
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
-const complaintRoutes = require('./routes/complaints');
+
 const donationRoutes = require('./routes/donations');
 const eventRoutes = require('./routes/events');
 const newsRoutes = require('./routes/news');
@@ -36,16 +36,16 @@ const contactRoutes = require('./routes/contact');
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8000;
 
 // Security middleware
 app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// CORS configuration
+// CORS configuration - Allow all origins
 app.use(cors({
-    origin: ['https://bhrcdata.online', 'http://localhost:3000', 'http://localhost:8000', 'http://localhost:5173', 'http://localhost:3001'],
+    origin: true, // Allow all origins
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
@@ -86,30 +86,23 @@ app.get('/health', (req, res) => {
 // Route registration
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/admin/users', userRoutes);
-app.use('/api/complaints', complaintRoutes);
-app.use('/api/admin/complaints', complaintRoutes);
+
 app.use('/api/donations', donationRoutes);
-app.use('/api/admin/donations', donationRoutes);
 app.use('/api/events', eventRoutes);
-app.use('/api/admin/events', eventRoutes);
 app.use('/api/news', newsRoutes);
-app.use('/api/admin/news', newsRoutes);
 app.use('/api/gallery', galleryRoutes);
-app.use('/api/admin/gallery', galleryRoutes);
 app.use('/api/certificates', certificateRoutes);
-app.use('/api/admin/certificates', certificateRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/admin/dashboard', dashboardRoutes);
 app.use('/api/settings', settingsRoutes);
-app.use('/api/admin/settings', settingsRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/upload', fileRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/analytics', analyticsRoutes);
-app.use('/api/admin', adminRoutes);
 app.use('/api/member', memberRoutes);
 app.use('/api/contact', contactRoutes);
+
+// Admin routes (must be after regular routes to avoid conflicts)
+app.use('/api/admin', adminRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

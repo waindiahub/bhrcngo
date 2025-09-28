@@ -43,9 +43,7 @@ async function getStats(req, res) {
 
         const stats = {};
 
-        // Total complaints
-        const complaintsResult = await fetchOne('SELECT COUNT(*) as count FROM complaints');
-        stats.total_complaints = complaintsResult.count;
+
 
         // Total events
         const eventsResult = await fetchOne('SELECT COUNT(*) as count FROM events');
@@ -59,12 +57,7 @@ async function getStats(req, res) {
         stats.total_donations = parseInt(donationsResult.total);
         stats.total_donation_amount = parseFloat(donationsResult.total_amount);
 
-        // Recent activity count (last 30 days)
-        const recentResult = await fetchOne(`
-            SELECT COUNT(*) as recent FROM complaints 
-            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-        `);
-        stats.recent_complaints = parseInt(recentResult.recent);
+
 
         // Log activity
         await logActivity(user.id, 'dashboard_stats_viewed', 'Dashboard statistics viewed');
@@ -116,23 +109,7 @@ async function getAdminStats(req, res) {
             pending_verifications: parseInt(userResult.pending_verifications)
         };
 
-        // Complaint statistics
-        const complaintResult = await fetchOne(`
-            SELECT 
-                COUNT(*) as total_complaints,
-                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_complaints,
-                SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress_complaints,
-                SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END) as resolved_complaints
-            FROM complaints
-        `);
 
-        stats = {
-            ...stats,
-            total_complaints: parseInt(complaintResult.total_complaints),
-            pending_complaints: parseInt(complaintResult.pending_complaints),
-            in_progress_complaints: parseInt(complaintResult.in_progress_complaints),
-            resolved_complaints: parseInt(complaintResult.resolved_complaints)
-        };
 
         // Event statistics
         const eventResult = await fetchOne(`
@@ -196,23 +173,7 @@ async function getMemberStats(req, res) {
         const userId = user.id;
         let stats = {};
 
-        // User's complaint statistics
-        const complaintStats = await fetchOne(`
-            SELECT 
-                COUNT(*) as total_complaints,
-                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_complaints,
-                SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress_complaints,
-                SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END) as resolved_complaints
-            FROM complaints WHERE user_id = ?
-        `, [userId]);
 
-        stats = {
-            ...stats,
-            my_complaints: parseInt(complaintStats.total_complaints),
-            pending_complaints: parseInt(complaintStats.pending_complaints),
-            in_progress_complaints: parseInt(complaintStats.in_progress_complaints),
-            resolved_complaints: parseInt(complaintStats.resolved_complaints)
-        };
 
         // User's donation statistics
         const donationStats = await fetchOne(`
@@ -286,16 +247,7 @@ async function getActivities(req, res) {
         const limit = parseInt(req.query.limit) || 20;
         let activities = [];
 
-        // Get recent complaints
-        const complaints = await db.query(`
-            SELECT 'complaint_filed' as type, id, 
-                   CONCAT('New complaint: ', subject) as title,
-                   subject as description, created_at, status, 
-                   complainant_name as user_name
-            FROM complaints 
-            ORDER BY created_at DESC 
-            LIMIT 5
-        `);
+
 
         // Get recent user registrations
         const users = await db.query(`
@@ -333,7 +285,7 @@ async function getActivities(req, res) {
         `);
 
         // Merge and sort all activities
-        activities = [...complaints, ...users, ...events, ...donations];
+        activities = [...users, ...events, ...donations];
         activities.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
         // Limit to requested number
@@ -398,27 +350,24 @@ async function getChartData(req, res) {
             ORDER BY date ASC
         `, [dateFromStr]);
 
-        // Format for chart
-        chartData.users = userRegistrations.map(item => ({
-            date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-            count: parseInt(item.count),
-            value: parseInt(item.count)
-        }));
+        // Format for chart - ensure we have data for each day in the period
+        const userChartData = [];
+        const startDate = new Date(dateFromStr);
+        const endDate = new Date();
+        
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            const dateStr = d.toISOString().split('T')[0];
+            const existingData = userRegistrations.find(item => item.date === dateStr);
+            userChartData.push({
+                date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                count: existingData ? parseInt(existingData.count) : 0,
+                value: existingData ? parseInt(existingData.count) : 0
+            });
+        }
+        
+        chartData.users = userChartData;
 
-        // Get complaint status distribution
-        const complaintStats = await db.query(`
-            SELECT status, COUNT(*) as count
-            FROM complaints 
-            GROUP BY status
-            ORDER BY count DESC
-        `);
 
-        // Format for chart
-        chartData.complaints = complaintStats.map(item => ({
-            status: item.status.charAt(0).toUpperCase() + item.status.slice(1),
-            count: parseInt(item.count),
-            value: parseInt(item.count)
-        }));
 
         // Log activity
         await logActivity(user.id, 'chart_data_viewed', 'Dashboard chart data viewed');

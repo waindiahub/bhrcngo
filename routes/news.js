@@ -32,7 +32,7 @@ const createNewsValidation = [
     
     body('category')
         .optional()
-        .isIn(['general', 'human-rights', 'legal', 'awareness', 'events', 'announcements'])
+        .isIn(['news', 'press_release', 'article', 'announcement', 'blog'])
         .withMessage('Invalid category'),
     
     body('status')
@@ -40,10 +40,18 @@ const createNewsValidation = [
         .isIn(['draft', 'published', 'archived'])
         .withMessage('Invalid status'),
     
-    body('image_url')
+    body('featured_image')
         .optional()
-        .isURL()
-        .withMessage('Invalid image URL')
+        .custom((value) => {
+            if (value && value.trim() !== '') {
+                // Only validate URL if value is provided and not empty
+                const urlPattern = /^https?:\/\/.+/;
+                if (!urlPattern.test(value)) {
+                    throw new Error('Invalid image URL');
+                }
+            }
+            return true;
+        })
 ];
 
 // Validation rules for updating news
@@ -69,7 +77,7 @@ const updateNewsValidation = [
     
     body('category')
         .optional()
-        .isIn(['general', 'human-rights', 'legal', 'awareness', 'events', 'announcements'])
+        .isIn(['news', 'press_release', 'article', 'announcement', 'blog'])
         .withMessage('Invalid category'),
     
     body('status')
@@ -77,10 +85,18 @@ const updateNewsValidation = [
         .isIn(['draft', 'published', 'archived'])
         .withMessage('Invalid status'),
     
-    body('image_url')
+    body('featured_image')
         .optional()
-        .isURL()
-        .withMessage('Invalid image URL')
+        .custom((value) => {
+            if (value && value.trim() !== '') {
+                // Only validate URL if value is provided and not empty
+                const urlPattern = /^https?:\/\/.+/;
+                if (!urlPattern.test(value)) {
+                    throw new Error('Invalid image URL');
+                }
+            }
+            return true;
+        })
 ];
 
 // Validation rules for query parameters
@@ -97,7 +113,7 @@ const queryValidation = [
     
     query('category')
         .optional()
-        .isIn(['general', 'human-rights', 'legal', 'awareness', 'events', 'announcements'])
+        .isIn(['news', 'press_release', 'article', 'announcement', 'blog'])
         .withMessage('Invalid category'),
     
     query('status')
@@ -147,6 +163,18 @@ router.get('/admin/stats',
     authenticateToken,
     authorizeRoles(['admin', 'moderator']),
     newsController.getNewsStats
+);
+
+/**
+ * @route   GET /api/news/admin/all
+ * @desc    Get all news articles for admin (including drafts)
+ * @access  Private (Admin/Moderator)
+ */
+router.get('/admin/all', 
+    authenticateToken,
+    authorizeRoles(['admin', 'moderator']),
+    queryValidation,
+    newsController.getAdminNews
 );
 
 /**

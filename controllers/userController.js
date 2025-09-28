@@ -140,13 +140,24 @@ class UserController {
                 FROM users
             `);
 
-            // Convert to integers
+            // Convert to integers and map field names for frontend compatibility
             const formattedStats = {
                 total_users: parseInt(stats[0].total_users),
                 active_users: parseInt(stats[0].active_users),
+                pending_users: parseInt(stats[0].pending_verification),
                 pending_verification: parseInt(stats[0].pending_verification),
+                admin_users: 0, // Will be calculated separately
                 new_this_month: parseInt(stats[0].new_this_month)
             };
+
+            // Get admin users count separately
+            const adminStats = await QueryBuilder.query(`
+                SELECT COUNT(*) as admin_count
+                FROM users 
+                WHERE role IN ('admin', 'super_admin', 'moderator')
+            `);
+            
+            formattedStats.admin_users = parseInt(adminStats[0].admin_count);
 
             return ResponseHelper.success(res, formattedStats, 'User statistics retrieved successfully');
 

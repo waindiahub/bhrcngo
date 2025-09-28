@@ -4,24 +4,14 @@
  * BHRC India - Human Rights Commission Web Application
  */
 
-const mysql = require('mysql2/promise');
 const { validationResult } = require('express-validator');
 const nodemailer = require('nodemailer');
+const db = require('../config/database');
 const { logActivity, logError } = require('../middleware/logger');
 
 class SettingsController {
     constructor() {
-        // Database connection configuration
-        this.dbConfig = {
-            host: '37.27.60.109',
-            user: 'tzdmiohj_bhmc',
-            password: 'tzdmiohj_bhmc',
-            database: 'tzdmiohj_bhmc',
-            waitForConnections: true,
-            connectionLimit: 10,
-            queueLimit: 0
-        };
-        this.pool = mysql.createPool(this.dbConfig);
+        this.db = db;
     }
 
     /**
@@ -38,12 +28,9 @@ class SettingsController {
                 });
             }
 
-            const connection = await this.pool.getConnection();
-
-            try {
-                const [results] = await connection.execute(
-                    'SELECT category, setting_key, setting_value FROM system_settings ORDER BY category, setting_key'
-                );
+            const results = await this.db.query(
+                'SELECT category, setting_key, setting_value FROM system_settings ORDER BY category, setting_key'
+            );
 
                 // Organize settings by category
                 const settings = {};
@@ -94,10 +81,6 @@ class SettingsController {
                     data: settings
                 });
 
-            } finally {
-                connection.release();
-            }
-
         } catch (error) {
             await logError(error, req.user?.id, 'settings_fetch_error');
             console.error('Error fetching settings:', error);
@@ -139,10 +122,9 @@ class SettingsController {
                 });
             }
 
-            const connection = await this.pool.getConnection();
+            const connection = await this.db.beginTransaction();
 
             try {
-                await connection.beginTransaction();
 
                 // Validate settings structure
                 const allowedCategories = ['general', 'email', 'payment', 'security', 'notifications'];
@@ -182,7 +164,7 @@ class SettingsController {
                     }
                 }
 
-                await connection.commit();
+                await this.db.commitTransaction(connection);
 
                 // Log the settings update
                 await logActivity(user.id, 'settings_updated', 'System settings updated');
@@ -193,10 +175,8 @@ class SettingsController {
                 });
 
             } catch (error) {
-                await connection.rollback();
+                await this.db.rollbackTransaction(connection);
                 throw error;
-            } finally {
-                connection.release();
             }
 
         } catch (error) {
@@ -284,12 +264,9 @@ class SettingsController {
                 });
             }
 
-            const connection = await this.pool.getConnection();
-
-            try {
-                const [settings] = await connection.execute(
-                    'SELECT * FROM system_settings ORDER BY category, setting_key'
-                );
+            const settings = await this.db.query(
+                'SELECT * FROM system_settings ORDER BY category, setting_key'
+            );
 
                 const backup = {
                     timestamp: new Date().toISOString(),
@@ -301,7 +278,7 @@ class SettingsController {
                 const backupData = JSON.stringify(backup);
                 const backupName = `backup_${new Date().toISOString().replace(/[:.]/g, '_')}`;
                 
-                await connection.execute(`
+                await this.db.query(`
                     INSERT INTO settings_backups (backup_name, backup_data, created_at) 
                     VALUES (?, ?, NOW())
                 `, [backupName, backupData]);
@@ -314,10 +291,6 @@ class SettingsController {
                     message: 'Settings backup created successfully',
                     data: { backup_name: backupName }
                 });
-
-            } finally {
-                connection.release();
-            }
 
         } catch (error) {
             await logError(error, req.user?.id, 'settings_backup_error');
@@ -351,14 +324,11 @@ class SettingsController {
                 });
             }
 
-            const connection = await this.pool.getConnection();
-
-            try {
-                // Get backup data
-                const [backupRows] = await connection.execute(
-                    'SELECT backup_data FROM settings_backups WHERE backup_name = ?',
-                    [backup_name]
-                );
+            // Get backup data
+            const backupRows = await this.db.query(
+                'SELECT backup_data FROM settings_backups WHERE backup_name = ?',
+                [backup_name]
+            );
 
                 if (backupRows.length === 0) {
                     return res.status(404).json({
@@ -375,41 +345,40 @@ class SettingsController {
                     });
                 }
 
-                await connection.beginTransaction();
+                const connection = await this.db.beginTransaction();
 
-                // Clear current settings
-                await connection.execute('DELETE FROM system_settings');
+                try {
+                    // Clear current settings
+                    await connection.execute('DELETE FROM system_settings');
 
-                // Restore settings
-                for (const setting of backup.settings) {
-                    await connection.execute(`
-                        INSERT INTO system_settings (category, setting_key, setting_value, created_at, updated_at) 
-                        VALUES (?, ?, ?, ?, ?)
-                    `, [
-                        setting.category,
-                        setting.setting_key,
-                        setting.setting_value,
-                        setting.created_at,
-                        setting.updated_at
-                    ]);
+                    // Restore settings
+                    for (const setting of backup.settings) {
+                        await connection.execute(`
+                            INSERT INTO system_settings (category, setting_key, setting_value, created_at, updated_at) 
+                            VALUES (?, ?, ?, ?, ?)
+                        `, [
+                            setting.category,
+                            setting.setting_key,
+                            setting.setting_value,
+                            setting.created_at,
+                            setting.updated_at
+                        ]);
+                    }
+
+                    await this.db.commitTransaction(connection);
+
+                    // Log the restore
+                    await logActivity(user.id, 'settings_restored', `Settings restored from backup: ${backup_name}`);
+
+                    res.json({
+                        success: true,
+                        message: 'Settings restored successfully'
+                    });
+
+                } catch (error) {
+                    await this.db.rollbackTransaction(connection);
+                    throw error;
                 }
-
-                await connection.commit();
-
-                // Log the restore
-                await logActivity(user.id, 'settings_restored', `Settings restored from backup: ${backup_name}`);
-
-                res.json({
-                    success: true,
-                    message: 'Settings restored successfully'
-                });
-
-            } catch (error) {
-                await connection.rollback();
-                throw error;
-            } finally {
-                connection.release();
-            }
 
         } catch (error) {
             await logError(error, req.user?.id, 'settings_restore_error');
@@ -435,24 +404,17 @@ class SettingsController {
                 });
             }
 
-            const connection = await this.pool.getConnection();
+            const backups = await this.db.query(`
+                SELECT backup_name, created_at 
+                FROM settings_backups 
+                ORDER BY created_at DESC
+            `);
 
-            try {
-                const [backups] = await connection.execute(`
-                    SELECT backup_name, created_at 
-                    FROM settings_backups 
-                    ORDER BY created_at DESC
-                `);
-
-                res.json({
-                    success: true,
-                    message: 'Backups retrieved successfully',
-                    data: backups
-                });
-
-            } finally {
-                connection.release();
-            }
+            res.json({
+                success: true,
+                message: 'Backups retrieved successfully',
+                data: backups
+            });
 
         } catch (error) {
             await logError(error, req.user?.id, 'settings_backups_list_error');

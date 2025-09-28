@@ -12,7 +12,7 @@ const { authenticateToken, authorizeRoles, validateRequest } = require('../middl
 
 // Import controllers
 const UserController = require('../controllers/userController');
-const ComplaintController = require('../controllers/complaintController');
+
 const DashboardController = require('../controllers/dashboardController');
 
 // Validation rules
@@ -22,11 +22,7 @@ const validateUserId = [
         .withMessage('User ID must be a positive integer')
 ];
 
-const validateComplaintId = [
-    param('complaintId')
-        .isInt({ min: 1 })
-        .withMessage('Complaint ID must be a positive integer')
-];
+
 
 const validateStatusUpdate = [
     body('status')
@@ -46,25 +42,9 @@ const validateBulkOperation = [
         })
 ];
 
-const validateComplaintAssignment = [
-    body('assigned_to')
-        .isInt({ min: 1 })
-        .withMessage('Assigned user ID must be a positive integer'),
-    body('notes')
-        .optional()
-        .isLength({ max: 1000 })
-        .withMessage('Notes must not exceed 1000 characters')
-];
 
-const validateComplaintComment = [
-    body('comment')
-        .isLength({ min: 1, max: 1000 })
-        .withMessage('Comment must be between 1 and 1000 characters'),
-    body('is_internal')
-        .optional()
-        .isBoolean()
-        .withMessage('is_internal must be a boolean')
-];
+
+
 
 // Admin User Management Routes
 /**
@@ -202,137 +182,68 @@ router.post('/users/bulk-:action',
 );
 
 /**
+ * Get user statistics
+ * GET /api/admin/users/stats
+ */
+router.get('/users/stats', 
+    authenticateToken,
+    authorizeRoles(['admin', 'super_admin']),
+    UserController.getUserStats
+);
+
+
+
+/**
  * Get staff members
  * GET /api/admin/staff
  */
 router.get('/staff', 
     authenticateToken,
-    authorizeRoles(['admin', 'super_admin']),
-    ComplaintController.getStaffMembers
+    authorizeRoles(['admin', 'moderator', 'super_admin']),
+    (req, res) => res.json({ success: true, data: [] })
+);
+
+/**
+ * Test endpoint
+ * GET /api/admin/test
+ */
+router.get('/test', 
+    authenticateToken,
+    authorizeRoles(['admin', 'moderator', 'super_admin']),
+    (req, res) => {
+        res.json({
+            success: true,
+            message: 'Admin routes are working',
+            user: req.user,
+            timestamp: new Date().toISOString()
+        });
+    }
 );
 
 // Admin Complaint Management Routes
-/**
- * Get all complaints (admin-specific route)
- * GET /api/admin/complaints
- */
-router.get('/complaints', 
-    authenticateToken,
-    authorizeRoles(['admin', 'moderator', 'super_admin']),
-    ComplaintController.getAllComplaints
-);
 
-/**
- * Get complaint details
- * GET /api/admin/complaints/:id
- */
-router.get('/complaints/:id', 
-    authenticateToken,
-    authorizeRoles(['admin', 'moderator', 'super_admin']),
-    param('id').isInt({ min: 1 }).withMessage('Complaint ID must be a positive integer'),
-    validateRequest,
-    ComplaintController.getComplaintDetails
-);
 
-/**
- * Update complaint
- * PUT /api/admin/complaints/:id
- */
-router.put('/complaints/:id', 
-    authenticateToken,
-    authorizeRoles(['admin', 'moderator', 'super_admin']),
-    param('id').isInt({ min: 1 }).withMessage('Complaint ID must be a positive integer'),
-    validateRequest,
-    ComplaintController.updateComplaintStatus
-);
 
-/**
- * Delete complaint
- * DELETE /api/admin/complaints/:complaintId
- */
-router.delete('/complaints/:complaintId', 
-    authenticateToken,
-    authorizeRoles(['admin', 'super_admin']),
-    validateComplaintId,
-    validateRequest,
-    ComplaintController.deleteComplaint
-);
 
-/**
- * Download complaint file
- * GET /api/admin/complaints/:complaintId/download
- */
-router.get('/complaints/:complaintId/download', 
-    authenticateToken,
-    authorizeRoles(['admin', 'moderator', 'super_admin']),
-    validateComplaintId,
-    validateRequest,
-    ComplaintController.downloadComplaintFile
-);
 
-/**
- * Download complaint attachment
- * GET /api/admin/complaints/attachments/:attachmentId/download
- */
-router.get('/complaints/attachments/:attachmentId/download', 
-    authenticateToken,
-    authorizeRoles(['admin', 'moderator', 'super_admin']),
-    param('attachmentId').isInt({ min: 1 }).withMessage('Attachment ID must be a positive integer'),
-    validateRequest,
-    ComplaintController.downloadAttachment
-);
 
-/**
- * Assign complaint
- * POST /api/admin/complaints/:complaintId/assign
- */
-router.post('/complaints/:complaintId/assign', 
-    authenticateToken,
-    authorizeRoles(['admin', 'moderator', 'super_admin']),
-    validateComplaintId,
-    validateComplaintAssignment,
-    validateRequest,
-    ComplaintController.assignComplaint
-);
 
-/**
- * Add note to complaint
- * POST /api/admin/complaints/:id/notes
- */
-router.post('/complaints/:id/notes', 
-    authenticateToken,
-    authorizeRoles(['admin', 'moderator', 'super_admin']),
-    param('id').isInt({ min: 1 }).withMessage('Complaint ID must be a positive integer'),
-    body('content').isLength({ min: 1, max: 1000 }).withMessage('Note content is required and must not exceed 1000 characters'),
-    validateRequest,
-    ComplaintController.addNote
-);
 
-/**
- * Add comment to complaint
- * POST /api/admin/complaints/:complaintId/comments
- */
-router.post('/complaints/:complaintId/comments', 
-    authenticateToken,
-    authorizeRoles(['admin', 'moderator', 'super_admin']),
-    validateComplaintId,
-    validateComplaintComment,
-    validateRequest,
-    ComplaintController.addComment
-);
 
-/**
- * Bulk update complaint status
- * POST /api/admin/complaints/bulk-update-status
- */
-router.post('/complaints/bulk-update-status', 
-    authenticateToken,
-    authorizeRoles(['admin', 'super_admin']),
-    body('complaint_ids').isArray({ min: 1 }).withMessage('Complaint IDs array is required'),
-    body('status').isIn(['pending', 'in_progress', 'resolved', 'closed']).withMessage('Invalid status'),
-    validateRequest,
-    ComplaintController.bulkUpdateStatus
-);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Admin Dashboard Routes
 /**

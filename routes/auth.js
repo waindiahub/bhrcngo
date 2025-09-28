@@ -39,6 +39,13 @@ router.post('/logout', authenticateToken, AuthController.logout);
 router.get('/user', authenticateToken, AuthController.getCurrentUser);
 
 /**
+ * @route   GET /api/auth/me
+ * @desc    Get current user details (alias)
+ * @access  Private
+ */
+router.get('/me', authenticateToken, AuthController.getCurrentUser);
+
+/**
  * @route   POST /api/auth/refresh
  * @desc    Refresh JWT token
  * @access  Public

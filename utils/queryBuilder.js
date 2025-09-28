@@ -381,6 +381,16 @@ class QueryBuilder {
     }
 
     /**
+     * Execute a raw SQL query
+     * @param {string} sql - SQL query string
+     * @param {Array} params - Query parameters
+     * @returns {Promise<Array>} Query results
+     */
+    static async query(sql, params = []) {
+        return await db.query(sql, params);
+    }
+
+    /**
      * Get records with search functionality
      * @param {string} table - Table name
      * @param {Array} searchFields - Fields to search in

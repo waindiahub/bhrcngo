@@ -42,15 +42,15 @@ class NewsController {
             const whereClause = 'WHERE ' + whereConditions.join(' AND ');
 
             // Get total count
-            const countQuery = `SELECT COUNT(*) as total FROM news ${whereClause}`;
-            const [countResult] = await this.db.query(countQuery, params);
-            const total = countResult.total;
+            const countQuery = `SELECT COUNT(*) as total FROM news_articles ${whereClause}`;
+            const countResult = await this.db.query(countQuery, params);
+            const total = countResult[0]?.total || 0;
 
             // Get news articles
             const articlesQuery = `
-                SELECT id, title, excerpt, content, image_url, category, status, 
-                       created_at, updated_at, author_id
-                FROM news 
+                SELECT id, title, slug, excerpt, content, featured_image, category, status, 
+                       created_at, updated_at, author_id, published_at, views_count
+                FROM news_articles 
                 ${whereClause} 
                 ORDER BY created_at DESC 
                 LIMIT ${perPage} OFFSET ${offset}
@@ -98,8 +98,9 @@ class NewsController {
                 });
             }
 
-            const query = 'SELECT * FROM news WHERE id = ?';
-            const [article] = await this.db.query(query, [id]);
+            const query = 'SELECT * FROM news_articles WHERE id = ?';
+            const articleResult = await this.db.query(query, [id]);
+            const article = articleResult[0];
 
             if (!article) {
                 return res.status(404).json({
@@ -143,21 +144,29 @@ class NewsController {
                 title,
                 excerpt,
                 content,
-                image_url = '',
+                featured_image = '',
                 category = 'general',
                 status = 'draft'
             } = req.body;
 
+            // Generate slug from title
+            const slug = title.toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .trim('-');
+
             const query = `
-                INSERT INTO news (title, excerpt, content, image_url, category, status, author_id, created_at) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+                INSERT INTO news_articles (title, slug, excerpt, content, featured_image, category, status, author_id, created_at) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
             `;
 
             const result = await this.db.query(query, [
                 title,
+                slug,
                 excerpt,
                 content,
-                image_url,
+                featured_image,
                 category,
                 status,
                 req.user.id
@@ -207,7 +216,7 @@ class NewsController {
                 title,
                 excerpt,
                 content,
-                image_url = '',
+                featured_image = '',
                 category = 'general',
                 status = 'draft'
             } = req.body;
@@ -220,8 +229,9 @@ class NewsController {
             }
 
             // Check if article exists
-            const checkQuery = 'SELECT id, title FROM news WHERE id = ?';
-            const [existingArticle] = await this.db.query(checkQuery, [id]);
+            const checkQuery = 'SELECT id, title FROM news_articles WHERE id = ?';
+            const existingResult = await this.db.query(checkQuery, [id]);
+            const existingArticle = existingResult[0];
 
             if (!existingArticle) {
                 return res.status(404).json({
@@ -230,18 +240,29 @@ class NewsController {
                 });
             }
 
+            // Generate slug from title if title is being updated
+            let slug = null;
+            if (title) {
+                slug = title.toLowerCase()
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+                    .trim('-');
+            }
+
             const updateQuery = `
-                UPDATE news 
-                SET title = ?, excerpt = ?, content = ?, image_url = ?, 
+                UPDATE news_articles 
+                SET title = ?, slug = COALESCE(?, slug), excerpt = ?, content = ?, featured_image = ?, 
                     category = ?, status = ?, updated_at = NOW()
                 WHERE id = ?
             `;
 
             const result = await this.db.query(updateQuery, [
                 title,
+                slug,
                 excerpt,
                 content,
-                image_url,
+                featured_image,
                 category,
                 status,
                 id
@@ -293,8 +314,9 @@ class NewsController {
             }
 
             // Check if article exists and get details for logging
-            const checkQuery = 'SELECT id, title FROM news WHERE id = ?';
-            const [existingArticle] = await this.db.query(checkQuery, [id]);
+            const checkQuery = 'SELECT id, title FROM news_articles WHERE id = ?';
+            const existingResult = await this.db.query(checkQuery, [id]);
+            const existingArticle = existingResult[0];
 
             if (!existingArticle) {
                 return res.status(404).json({
@@ -303,7 +325,7 @@ class NewsController {
                 });
             }
 
-            const deleteQuery = 'DELETE FROM news WHERE id = ?';
+            const deleteQuery = 'DELETE FROM news_articles WHERE id = ?';
             const result = await this.db.query(deleteQuery, [id]);
 
             if (result.affectedRows === 0) {
@@ -341,7 +363,7 @@ class NewsController {
         try {
             const query = `
                 SELECT category, COUNT(*) as count 
-                FROM news 
+                FROM news_articles 
                 WHERE status = 'published' 
                 GROUP BY category 
                 ORDER BY count DESC
@@ -365,6 +387,101 @@ class NewsController {
     }
 
     /**
+     * Get all news articles for admin (including drafts)
+     * Admin/Moderator access required
+     */
+    async getAdminNews(req, res) {
+        try {
+            const {
+                page = 1,
+                per_page = 20,
+                category = '',
+                status = '',
+                search = '',
+                sortBy = 'created_at',
+                sortOrder = 'DESC'
+            } = req.query;
+
+            const pageNum = parseInt(page);
+            const perPage = parseInt(per_page);
+            const offset = (pageNum - 1) * perPage;
+
+            // Build WHERE clause
+            let whereConditions = [];
+            let params = [];
+
+            if (status) {
+                whereConditions.push('na.status = ?');
+                params.push(status);
+            }
+
+            if (category) {
+                whereConditions.push('na.category = ?');
+                params.push(category);
+            }
+
+            if (search) {
+                whereConditions.push('(na.title LIKE ? OR na.excerpt LIKE ? OR na.content LIKE ?)');
+                const searchTerm = `%${search}%`;
+                params.push(searchTerm, searchTerm, searchTerm);
+            }
+
+            const whereClause = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
+
+            // Get total count
+            const countQuery = `SELECT COUNT(*) as total FROM news_articles na ${whereClause}`;
+            const countResult = await this.db.query(countQuery, params);
+            const total = countResult[0]?.total || 0;
+
+            // Get news articles with author information
+            const articlesQuery = `
+                SELECT na.id, na.title, na.slug, na.excerpt, na.content, na.featured_image, 
+                       na.category, na.status, na.created_at, na.updated_at, na.author_id, 
+                       na.published_at, na.views_count,
+                       u.first_name, u.last_name, u.username
+                FROM news_articles na
+                LEFT JOIN users u ON na.author_id = u.id
+                ${whereClause} 
+                ORDER BY na.${sortBy} ${sortOrder} 
+                LIMIT ${perPage} OFFSET ${offset}
+            `;
+
+            const articles = await this.db.query(articlesQuery, params);
+
+            // Format articles with author name
+            const formattedArticles = articles.map(article => ({
+                ...article,
+                author_name: article.first_name && article.last_name 
+                    ? `${article.first_name} ${article.last_name}` 
+                    : article.username || 'Unknown'
+            }));
+
+            const response = {
+                data: formattedArticles,
+                meta: {
+                    current_page: pageNum,
+                    per_page: perPage,
+                    total: total,
+                    last_page: Math.ceil(total / perPage)
+                }
+            };
+
+            res.json({
+                success: true,
+                message: 'Articles retrieved successfully',
+                data: response
+            });
+
+        } catch (error) {
+            logError('Get admin news error', error, req.user?.id);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to fetch articles'
+            });
+        }
+    }
+
+    /**
      * Get news statistics
      * Admin/Moderator access required
      */
@@ -375,18 +492,20 @@ class NewsController {
                     COUNT(*) as total_articles,
                     SUM(CASE WHEN status = 'published' THEN 1 ELSE 0 END) as published_articles,
                     SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END) as draft_articles,
+                    SUM(CASE WHEN status = 'archived' THEN 1 ELSE 0 END) as archived_articles,
                     SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) as today_articles,
                     SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 ELSE 0 END) as week_articles,
                     SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) as month_articles
-                FROM news
+                FROM news_articles
             `;
 
-            const [stats] = await this.db.query(statsQuery);
+            const statsResult = await this.db.query(statsQuery);
+            const stats = statsResult[0] || {};
 
             // Get category breakdown
             const categoryQuery = `
                 SELECT category, COUNT(*) as count 
-                FROM news 
+                FROM news_articles 
                 GROUP BY category 
                 ORDER BY count DESC
             `;
@@ -395,8 +514,8 @@ class NewsController {
 
             // Get recent articles
             const recentQuery = `
-                SELECT id, title, category, status, created_at 
-                FROM news 
+                SELECT id, title, slug, category, status, created_at, published_at, views_count
+                FROM news_articles 
                 ORDER BY created_at DESC 
                 LIMIT 10
             `;
@@ -423,4 +542,14 @@ class NewsController {
     }
 }
 
-module.exports = new NewsController();
+const newsController = new NewsController();
+
+// Bind methods to ensure 'this' context is preserved
+const boundMethods = {};
+Object.getOwnPropertyNames(NewsController.prototype).forEach(method => {
+    if (method !== 'constructor' && typeof newsController[method] === 'function') {
+        boundMethods[method] = newsController[method].bind(newsController);
+    }
+});
+
+module.exports = boundMethods;
